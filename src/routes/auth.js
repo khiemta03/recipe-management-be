@@ -7,7 +7,7 @@ const authControllers = require('../controllers/auth')
 
 router
     .post('/auth/login', authControllers.loginController)
-    .post('/auth/signup', authControllers.registerController)
+    .post('/auth/register', authControllers.registerController)
 
 
 module.exports = router

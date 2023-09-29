@@ -3,7 +3,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
-const router = require('./routes/auth')
+const router = require('./src/routes/auth')
 
 
 // parse application/x-www-form-urlencoded
