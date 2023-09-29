@@ -3,7 +3,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
-const router = require('./src/routes/auth')
+const router = require('./src/routes/index')
 
 
 // parse application/x-www-form-urlencoded
@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 //routes
-app.use('/api/v1', router)
+app.use('/api/v1', router.authRoutes)
 
 
 // server runs at port 8000
