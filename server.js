@@ -16,8 +16,8 @@ app.use(bodyParser.json())
 app.use('/api/v1', router.authRoutes)
 
 
-// server runs at port 8000
-const port = 8000
+// server runs at port 3000
+const port = 3000
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
 })
