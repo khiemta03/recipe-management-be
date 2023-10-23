@@ -6,8 +6,8 @@ const {loginController, registerController} = require('../controllers/index')
 
 
 router
-    .post('/auth/login', loginController)
-    .post('/auth/register', registerController)
+    .post('/login', loginController)
+    .post('/register', registerController)
 
 
 module.exports = router
