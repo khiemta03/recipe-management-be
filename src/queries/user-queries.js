@@ -9,7 +9,7 @@ const getUserProfile = async (username, password, role = null) => {
     try {
         const userQueryData = await postgres.query(queryString)
 
-        const userFormattedData = userQueryData?.rowCount >= 1 ? userQueryData?.rows[0] : {}
+        const userFormattedData = userQueryData.rowCount >= 1 ? userQueryData.rows[0] : {}
 
         return userFormattedData
     }
