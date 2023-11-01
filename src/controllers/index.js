@@ -1,12 +1,12 @@
 const {loginController, registerController} = require('./auth-controller')
-const {recipeTypesCountController, getRecipeTypesController} = require('./recipe-type-controller')
+const {recipeCategoriesController, recipeCategoryCountController} = require('./recipe-category-controller')
 const {getRecipesController, recipesCountController} = require('./recipe-controller')
 
 module.exports = {
     loginController,
     registerController,
-    recipeTypesCountController,
-    getRecipeTypesController,
+    recipeCategoriesController,
+    recipeCategoryCountController,
     recipesCountController,
     getRecipesController
 }
