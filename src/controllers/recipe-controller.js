@@ -1,7 +1,7 @@
 const { getRecipes, getNumOfRecipes } = require('../queries/index')
 
 
-const recipesRetrievalController = async (req, res) => {
+const getRecipesController = async (req, res) => {
     const pageSize = req.query['page']
     const perPage = req.query['per_page']
     const sortBy = req.query['sort_by']
@@ -37,5 +37,5 @@ const recipesCountController = async (req, res) => {
 
 module.exports = {
     recipesCountController,
-    recipesRetrievalController
+    getRecipesController
 }
