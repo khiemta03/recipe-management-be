@@ -17,7 +17,7 @@ const recipeTypesCountController = async (req, res) => {
     }
 }
 
-const recipeTypesRetrievalController = async (req, res) => {
+const getRecipeTypesController = async (req, res) => {
     try {
         const recipeTypeData = await getRecipeTypes()
         res.json({
@@ -35,5 +35,5 @@ const recipeTypesRetrievalController = async (req, res) => {
 
 module.exports = {
     recipeTypesCountController,
-    recipeTypesRetrievalController
+    getRecipeTypesController
 }

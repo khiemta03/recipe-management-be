@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { recipeTypesCountController, recipeTypesRetrievalController } = require('../controllers/index')
+const { recipeTypesCountController, getRecipeTypesController } = require('../controllers/index')
 
 
 
@@ -8,6 +8,6 @@ const { recipeTypesCountController, recipeTypesRetrievalController } = require('
 
 router
     .get('/count', recipeTypesCountController)
-    .get('/', recipeTypesRetrievalController)
+    .get('/', getRecipeTypesController)
 
 module.exports = router

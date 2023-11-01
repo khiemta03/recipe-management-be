@@ -1,12 +1,12 @@
 const express = require('express')
 const router = express.Router()
-const { recipesRetrievalController, recipesCountController } = require('../controllers/index')
+const { getRecipesController, recipesCountController } = require('../controllers/index')
 
 
 
 
 router
-    .get('/', recipesRetrievalController)
+    .get('/', getRecipesController)
     .get('/count', recipesCountController)
 
 module.exports = router
