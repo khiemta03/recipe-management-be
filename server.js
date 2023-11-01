@@ -17,6 +17,12 @@ app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/recipe-categories', recipeCategoryRoutes)
 app.use('/api/v1/recipes', recipeRoutes)
 
+app.use('/',(req,res) => {
+    res.status(404).json({
+        status: 404,
+        message: 'Not found'
+    })  
+})
 
 // server runs at port 3000
 const port = 3000
