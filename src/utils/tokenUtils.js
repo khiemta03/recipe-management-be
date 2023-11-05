@@ -8,7 +8,13 @@ const secretKey = process.env.SECRET_KEY
 
 
 const isTokenValid = (token) => {
-
+    try {
+        const obj = getObjectFromToken(token);
+        return true;
+    }
+    catch(err) {
+        return false;
+    }
 }
 
 const generateNewToken = (obj) => {

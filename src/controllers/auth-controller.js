@@ -22,9 +22,11 @@ const loginController = async (req, res, next) => {
             const token = tokenUtils.generateNewToken({
                 username: username
             })
-            res.status(200).json({
-                token: token,
-                message: 'Login successfully'
+            res.json({
+                accessToken: token,
+                status: 200,
+                message: 'Login successfully',
+                roles: [userData.role]
             })
         }
     }
@@ -32,6 +34,7 @@ const loginController = async (req, res, next) => {
     catch (err) {
         console.log(err)
         res.status(400).json({
+            status: 400,
             message: err.message
         })
     }
@@ -39,23 +42,22 @@ const loginController = async (req, res, next) => {
 
 // register
 const registerController = async (req, res, next) => {
-    const username = req.body.username
-    const password = req.body.password
+    const username = req.body.username;
+    const password = req.body.password;
+    const email = req.body.email;
+    const name = req.body.name;
+    
 
     try {
         const userData = await getUserProfile(username, password)
 
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username, so we add it
-            await addNewUser(username, password)
-
-            const token = tokenUtils.generateNewToken({
-                username: username
-            })
+            await addNewUser(username, password, name, email)
             
             // return a success message along with a token
-            res.status(200).json({
-                token: token,
+            res.json({
+                status: 200,
                 message: 'Sign up successfully'
             })
         } else {
@@ -66,6 +68,7 @@ const registerController = async (req, res, next) => {
     catch (err) {
         // Handle errors
         res.status(400).json({
+            status: 400,
             message: err.message
         })
     }
