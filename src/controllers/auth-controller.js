@@ -1,5 +1,5 @@
 const { verify } = require('jsonwebtoken')
-const {getUserProfile, addNewUser} = require('../queries/index')
+const {getUserProfile, addNewUser, getRoleByRoleId} = require('../queries/index')
 
 
 // ? Utils
@@ -22,7 +22,10 @@ const loginController = async (req, res, next) => {
             const token = tokenUtils.generateNewToken({
                 username: username
             })
-            res.json({
+
+            const role = await getRoleByRoleId(userData.role);
+            userData.role = role;
+            res.status(200).json({
                 accessToken: token,
                 status: 200,
                 message: 'Login successfully',
@@ -53,12 +56,20 @@ const registerController = async (req, res, next) => {
 
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username, so we add it
-            await addNewUser(username, password, name, email)
+            await addNewUser(username, password, name, email);
+            const token = tokenUtils.generateNewToken({
+                username:username
+            });
+
+            //by default register: role is user
+            const role = await getRoleByRoleId(1);
             
             // return a success message along with a token
-            res.json({
+            res.status(200).json({
                 status: 200,
-                message: 'Sign up successfully'
+                accessToken: token,
+                message: 'Sign up successfully',
+                role: [role]
             })
         } else {
             // Database has this username

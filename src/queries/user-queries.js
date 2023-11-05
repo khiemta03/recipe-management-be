@@ -2,9 +2,9 @@ const postgres = require('../databases/postgreSQL')
 
 
 //
-const getUserProfile = async (username, password, role = null) => {
+const getUserProfile = async (username, password, role = 1) => {
     let queryString = `select * from users where username = '${username}' and password = '${password}'`
-        + (role ? ` role = ${role}` : '')
+        //+ (role ? ` role = ${role}` : '')
 
     try {
         const userQueryData = await postgres.query(queryString)
