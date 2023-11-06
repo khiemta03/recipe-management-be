@@ -1,25 +1,22 @@
 const postgres = require('../databases/postgreSQL')
 
 const getNumOfRecipeCategories = async () => {
-    const queryString = `select count(*) from LOAICT`
+    const queryString = `select count(*) from CATEGORIES`
     try {
         const numOfRecipeCategoriesData = await postgres.query(queryString)
         return numOfRecipeCategoriesData.rows[0]
     } catch (err) {
-        throw err
+        throw new Error('Internal Server Error')
     }
 }
 
-const getRecipeCategories = async() => {
-    const queryString = `select * from LOAICT`
+const getRecipeCategories = async () => {
+    const queryString = `select * from CATEGORIES`
     try {
         const recipeCategoryData = await postgres.query(queryString)
-        if (recipeCategoryData.rowCount == 0) {
-            throw new Error()
-        }
         return recipeCategoryData.rows
     } catch (err) {
-        throw err
+        throw new Error('Internal Server Error')
     }
 }
 
