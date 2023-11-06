@@ -9,8 +9,8 @@ const recipeCategoryCountController = async (req, res) => {
             data: recipeCategoryCount
         })
     } catch(err) {
-        res.status(401).json({
-            status: 401,
+        res.status(500).json({
+            status: 500,
             message: err.message
         })
     }
@@ -24,8 +24,8 @@ const recipeCategoriesController = async (req, res) => {
             data: recipeCategoryData
         })
     } catch (err) {
-        res.status(401).json({
-            status: 401,
+        res.status(500).json({
+            status: 500,
             message: err.message
         })
     }
