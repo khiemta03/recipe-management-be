@@ -1,11 +1,11 @@
 const postgres = require('../databases/postgreSQL')
 
 
-//
-const getUserProfile = async (username, password, role = 1) => {
-    let queryString = `select * from users where username = '${username}' and password = '${password}'`
-        //+ (role ? ` role = ${role}` : '')
+//Dung id hoac username
+const getUserProfile = async (obj) => {
+    let queryString = ''
 
+    queryString = obj.username ? `select * from Users where Username = '${obj.username}'` : `select * from Users where UserId = '${obj.id}'`
     try {
         const userQueryData = await postgres.query(queryString)
 
@@ -19,7 +19,7 @@ const getUserProfile = async (username, password, role = 1) => {
 
 
 //add new user for register function
-const addNewUser = async (username, password, name ,email, role = 1, avatar = null) => {
+const addNewUser = async (username, password, name, email, role = 1, avatar = null) => {
     let queryString = `insert into Users(username, password, name, email, role, avatar)
                         values('${username}', '${password}', '${name}', '${email}', ${role}, '${avatar}')`;
     try {

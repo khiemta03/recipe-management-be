@@ -1,5 +1,5 @@
 const { verify } = require('jsonwebtoken')
-const {getUserProfile, addNewUser, getRoleByRoleId} = require('../queries/index')
+const { getUserProfile, addNewUser, getRoleByRoleId } = require('../queries/index')
 
 
 // ? Utils
@@ -12,12 +12,15 @@ const loginController = async (req, res, next) => {
     const password = req.body.password
 
     try {
-        const userData = await getUserProfile(username, password)
-
+        const userData = await getUserProfile({ username: username })
+        
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username
             throw new Error('Invalid credentials')
-        } else {
+        } else if (userData.password !== password) {
+            throw new Error('Invalid credentials')
+        }
+        else {
             // Database has this username, so we send a success message with a token
             const token = tokenUtils.generateNewToken({
                 username: username
@@ -35,7 +38,6 @@ const loginController = async (req, res, next) => {
     }
     // Handle errors
     catch (err) {
-        console.log(err)
         res.status(400).json({
             status: 400,
             message: err.message
@@ -49,21 +51,21 @@ const registerController = async (req, res, next) => {
     const password = req.body.password;
     const email = req.body.email;
     const name = req.body.name;
-    
+
 
     try {
-        const userData = await getUserProfile(username, password)
+        const userData = await getUserProfile({ username: username })
 
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username, so we add it
             await addNewUser(username, password, name, email);
             const token = tokenUtils.generateNewToken({
-                username:username
+                username: username
             });
 
             //by default register: role is user
             const role = await getRoleByRoleId(1);
-            
+
             // return a success message along with a token
             res.status(200).json({
                 status: 200,
