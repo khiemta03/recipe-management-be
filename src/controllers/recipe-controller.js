@@ -1,34 +1,67 @@
-const { getRecipes, getNumOfRecipes } = require('../queries/index')
-
+const { getRecipes, getNumOfRecipes, getUserProfile, getFavouriteRecipes } = require('../queries/index')
+const { isEmpty } = require('../utils/objectUtils')
 
 const getRecipesController = async (req, res) => {
-    const pageSize = req.query['page']
-    const perPage = req.query['per_page']
-    const sortBy = req.query['sort_by']
     try {
-        const recipeData = await getRecipes(pageSize, perPage, sortBy)
+        const category = req.query['category'] || 'all'
+        let page = req.query['page'] || 1
+        page = parseInt(page)
+        const recipeCount = await getNumOfRecipes(category)
+        let perPage = req.query['per_page'] || recipeCount
+        perPage = parseInt(perPage)
+        const sortBy = req.query['sort_by'] || 'date'
+        const recipeData = await getRecipes(page, perPage, sortBy, category)
+
+        // add field isFavourite
+        const username = req.username
+        if (username) {
+            const userData = await getUserProfile({ username: username })
+            if (isEmpty(userData)) {
+                throw new Error('Invalid credentials')
+            }
+            const favouriteRecipes = await getFavouriteRecipes(userData.userid)
+            for (const r of recipeData) {
+                r.is_favourite = favouriteRecipes.some(fav => fav.recipeid === r.recipeid);
+            }
+        } else {
+            for (const r of recipeData) {
+                r.is_favourite = false
+            }
+        }
+
+        //Response
         res.json({
             status: 200,
+            page: page,
+            per_page: perPage,
+            total: recipeCount,
+            total_page: recipeCount % perPage === 0 ? Math.floor(recipeCount / perPage) : Math.floor(recipeCount / perPage) + 1,
+            sort_by: sortBy,
+            category: category,
             data: recipeData
         })
     } catch (err) {
-        res.status(401).json({
-            status: 401,
+        res.status(500).json({
+            status: 500,
             message: err.message
         })
     }
 }
 
 const recipesCountController = async (req, res) => {
+    const category = req.query['category'] || 'all'
     try {
-        const recipeCount = await getNumOfRecipes()
+        const recipeCount = await getNumOfRecipes(category)
         res.json({
             status: 200,
-            data: recipeCount
+            category: category,
+            data: {
+                count: recipeCount
+            }
         })
     } catch (err) {
-        res.status(401).json({
-            status: 401,
+        res.status(500).json({
+            status: 500,
             message: err.message
         })
     }
