@@ -35,7 +35,6 @@ const loginController = async (req, res, next) => {
     }
     // Handle errors
     catch (err) {
-        console.log(err)
         res.status(400).json({
             status: 400,
             message: err.message
