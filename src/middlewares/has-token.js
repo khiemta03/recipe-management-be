@@ -9,7 +9,7 @@ const hasToken = (req, res, next) => {
             req.username = obj.username
         }
         catch (err) {
-            res.status(400).json({
+            return res.status(400).json({
                 status: 400,
                 message: 'Invalid credentials'
             })
