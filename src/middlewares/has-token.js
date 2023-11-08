@@ -6,7 +6,9 @@ const hasToken = (req, res, next) => {
     if (token) {
         try {
             const obj = getObjectFromToken(token)
-            req.username = obj.username
+            req.user = {
+                username: obj.username
+            }
         }
         catch (err) {
             return res.status(400).json({
