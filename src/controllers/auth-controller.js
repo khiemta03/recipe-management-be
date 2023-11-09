@@ -1,5 +1,5 @@
 const { verify } = require('jsonwebtoken')
-const { getUserProfile, addNewUser, getRoleByRoleId } = require('../queries/index')
+const { getUserProfile, addNewUser, getRoleByRoleId, addToken } = require('../queries/index')
 
 
 // ? Utils
@@ -13,7 +13,7 @@ const loginController = async (req, res, next) => {
 
     try {
         const userData = await getUserProfile({ username: username })
-        
+
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username
             throw new Error('Invalid credentials')
@@ -25,6 +25,8 @@ const loginController = async (req, res, next) => {
             const token = tokenUtils.generateNewToken({
                 username: username
             })
+
+            await addToken(token)
 
             const role = await getRoleByRoleId(userData.role);
             userData.role = role;
@@ -62,7 +64,7 @@ const registerController = async (req, res, next) => {
             const token = tokenUtils.generateNewToken({
                 username: username
             });
-
+            await addToken(token)
             //by default register: role is user
             const role = await getRoleByRoleId(1);
 
