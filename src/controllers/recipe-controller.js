@@ -13,7 +13,7 @@ const getRecipesController = async (req, res) => {
         const recipeData = await getRecipes(page, perPage, sortBy, category)
 
         // add field isFavourite
-        const username = req.username
+        const username = req.user.username
         if (username) {
             const userData = await getUserProfile({ username: username })
             if (isEmpty(userData)) {
