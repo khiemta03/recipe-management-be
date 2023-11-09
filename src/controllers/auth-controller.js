@@ -1,4 +1,3 @@
-const { verify } = require('jsonwebtoken')
 const { getUserProfile, addNewUser, getRoleByRoleId, addToken } = require('../queries/index')
 
 
