@@ -25,7 +25,7 @@ const generateNewToken = (obj) => {
         return newToken
     }
     catch (err) {
-        throw (err)
+        throw new Error('Invalid Credentials')
     }
 }
 
@@ -35,7 +35,7 @@ const getObjectFromToken = (token) => {
         return obj
     }
     catch (err) {
-        throw(err)
+        throw new Error('Invalid Credentials')
     }
 }
 

@@ -2,7 +2,7 @@ const { getObjectFromToken } = require('../utils/tokenUtils')
 const { isEmpty } = require('../utils/objectUtils')
 const { getToken, getUserProfile } = require('../queries/index')
 
-const hasToken = async (req, res, next) => {
+const validateToken = async (req, res, next) => {
     const token = req.headers['authorization']
     if (token) {
         try {
@@ -16,10 +16,11 @@ const hasToken = async (req, res, next) => {
                 throw new Error('Invalid credentials')
             }
             req.user = {
-                userId: user.userId,
+                userId: userData.userid,
                 username: userData.username,
                 role: userData.role
             }
+            next()
         }
         catch (err) {
             return res.status(400).json({
@@ -28,10 +29,15 @@ const hasToken = async (req, res, next) => {
             })
         }
     }
-    next()
+    else {
+        return res.status(403).json({
+            status: 403,
+            message: "You don't have permission to access this resource"
+        })
+    }
 }
 
 
 module.exports = {
-    hasToken
+    validateToken
 }
