@@ -16,7 +16,7 @@ const hasToken = async (req, res, next) => {
                 throw new Error('Invalid credentials')
             }
             req.user = {
-                userId: user.userId,
+                userid: userData.userid,
                 username: userData.username,
                 role: userData.role
             }

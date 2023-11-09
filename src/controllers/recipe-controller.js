@@ -13,12 +13,9 @@ const getRecipesController = async (req, res) => {
         const recipeData = await getRecipes(page, perPage, sortBy, category)
 
         // add field isFavourite
-        const username = req.user.username
-        if (username) {
-            const userData = await getUserProfile({ username: username })
-            if (isEmpty(userData)) {
-                throw new Error('Invalid credentials')
-            }
+        const userData = req.user
+        if (isEmpty(userData) === false) {
+
             const favouriteRecipes = await getFavouriteRecipes(userData.userid)
             for (const r of recipeData) {
                 r.is_favourite = favouriteRecipes.some(fav => fav.recipeid === r.recipeid);
