@@ -28,6 +28,19 @@ const addToken = async (token, iat) => {
 }
 
 
+//delete a token
+const deleteToken = async(token) => {
+    const queryString = 'delete from TOKENS where token = $1'
+    const values = [token]
+    try {
+        await postgres.query(queryString, values)
+    }
+    catch (err) {
+        throw new Error('Internal Server Error')
+    }
+}
+
+
 //clear records in TOKENS table
 const clearTOKENS = async() => {
     const currentTime = (new Date()).getTime()/1000;
@@ -42,5 +55,5 @@ const clearTOKENS = async() => {
 }
 
 module.exports = {
-    getToken, addToken, clearTOKENS
+    getToken, addToken, deleteToken ,clearTOKENS
 }

@@ -88,6 +88,14 @@ const registerController = async (req, res, next) => {
     }
 }
 
+
+
+//logout
+const logoutController = async(req, res, next) => {
+    const token = req.headers['authorization']
+}
+
+
 module.exports = {
     loginController,
     registerController
