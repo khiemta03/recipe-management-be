@@ -27,6 +27,20 @@ const addToken = async (token, iat) => {
     }
 }
 
+
+//clear records in TOKENS table
+const clearTOKENS = async() => {
+    const currentTime = (new Date()).getTime()/1000;
+    const queryString = 'delete from TOKENS where ($1 - iat) > 3600';
+    const values = [currentTime];
+    try {
+        await postgres.query(queryString, values);
+    }
+    catch(err) {
+        throw new Error('Internal Server Error');
+    }
+}
+
 module.exports = {
-    getToken, addToken
+    getToken, addToken, clearTOKENS
 }
