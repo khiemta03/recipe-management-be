@@ -4,7 +4,7 @@ const { getNumOfRecipeCategories, getRecipeCategories } = require('./recipe-cate
 const { getRoleByRoleId } = require('./role-queries')
 const {getFavouriteRecipes} = require('./favourite-queries')
 const {getToken, addToken} = require('./token-queries')
-
+const {getAllRoles} = require('./role-queries')
 
 module.exports = {
     getUserProfile,
@@ -17,5 +17,6 @@ module.exports = {
     getRoleByRoleId,
     getFavouriteRecipes,
     getToken,
-    addToken
+    addToken,
+    getAllRoles
 }
