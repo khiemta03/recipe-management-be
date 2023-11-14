@@ -1,4 +1,4 @@
-const { getUserProfile, addNewUser, getRoleByRoleId, addToken } = require('../queries/index')
+const { getUserProfile, addNewUser, getRoleByRoleId, addToken, deleteToken } = require('../queries/index')
 
 
 // ? Utils
@@ -92,11 +92,28 @@ const registerController = async (req, res, next) => {
 
 //logout
 const logoutController = async(req, res, next) => {
-    const token = req.headers['authorization']
+    const token = req.headers['authorization'];
+    try {
+        //always true
+        if(token) {
+            await deleteToken(token);
+            res.status(200).json({
+                status: 200,
+                message: 'Log out successfully',
+            })
+        }
+    }
+    catch(err) {
+        res.status(400).json({
+            status: 400,
+            message: err.message
+        })
+    }
 }
 
 
 module.exports = {
     loginController,
-    registerController
+    registerController,
+    logoutController
 }
