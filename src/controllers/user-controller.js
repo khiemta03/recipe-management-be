@@ -8,6 +8,12 @@ const getAllUsersController = async (req, res) => {
     role = parseInt(role)
     try {
         const usersData = await getAllUsers(role)
+        for (const user of usersData) {
+            const roleId = user.role
+            delete user.role
+            const roleName = await getRoleByRoleId(roleId)
+            user.roles = [roleName]
+        }
 
         res.json({
             status: 200,
@@ -28,12 +34,13 @@ const getUserProfileController = async (req, res) => {
         const userResData = await getUserProfile({ userId: id })
         const { username, password, ...userData } = userResData
         const roleId = userData.role
+        delete userData.role
         const roleName = await getRoleByRoleId(roleId)
-        userData.role = [roleName]
-            res.json({
-                status: 200,
-                data: userData
-            })
+        userData.roles = [roleName]
+        res.json({
+            status: 200,
+            data: userData
+        })
     }
     catch (err) {
         res.status(500).json({
