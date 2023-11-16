@@ -30,7 +30,7 @@ const addToken = async (token, iat) => {
 
 //delete a token
 const deleteToken = async(token) => {
-    const queryString = 'delete from TOKENS where token = $1'
+    const queryString = 'delete from TOKENS where TokenValue = $1'
     const values = [token]
     try {
         await postgres.query(queryString, values)
