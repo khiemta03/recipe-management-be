@@ -29,7 +29,7 @@ const addNewUser = async (username, password, name, email, role = 1, avatar = nu
     }
 }
 
-const getAllUsers = async (role) => {
+const getAllUsers = async (role = 'all') => {
     let queryString = 'select * from USERS'
     if (role === 1) {
         queryString += '\nwhere role = 1'

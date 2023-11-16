@@ -8,12 +8,12 @@ const hasToken = async (req, res, next) => {
         try {
             const tokenData = await getToken(token)
             if (isEmpty(tokenData)) {
-                throw new Error('Invalid credentials')
+                throw new Error('Token không hợp lệ')
             }
             const obj = getObjectFromToken(token)
             const userData = await getUserProfile({ username: obj.username })
             if (isEmpty(userData)) {
-                throw new Error('Invalid credentials')
+                throw new Error('Token không hợp lệ')
             }
             req.user = {
                 userid: userData.userid,

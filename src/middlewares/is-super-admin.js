@@ -7,7 +7,7 @@ const isSupderAdmin = async (req, res, next) => {
     } else {
         res.status(403).json({
             status: 403,
-            message: "You don't have permission to access this resource"
+            message: "Bạn không có quyền truy cập vào tài nguyên này"
         })
     }
 }

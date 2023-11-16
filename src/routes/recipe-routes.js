@@ -1,13 +1,20 @@
 const express = require('express')
 const router = express.Router()
-const { getRecipesController, recipesCountController } = require('../controllers/index')
-const { hasToken } = require('../middlewares/index')
+const { getRecipesController,
+    recipesCountController,
+    getRecipeController,
+    getPendingRecipesController,
+    getDeletedRecipesController } = require('../controllers/index')
+const { hasToken, isAdmin, validateToken } = require('../middlewares/index')
 
 
 
 
 router
-    .get('/', hasToken, getRecipesController)
+    .get('/pending', validateToken, isAdmin, getPendingRecipesController)
+    .get('/deleted', validateToken, isAdmin, getDeletedRecipesController)
     .get('/count', recipesCountController)
+    .get('/:id', hasToken, getRecipeController)
+    .get('/', hasToken, getRecipesController)
 
 module.exports = router
