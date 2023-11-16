@@ -1,9 +1,10 @@
 const { getUserProfile, getAllUsers, addNewUser, deleteUserProfile, updateUserProfile } = require('../queries/user-queries')
+const { getRoleByRoleId } = require('../queries/role-queries')
 const { uploadFileToGCP } = require('../helpers/index')
 
 
 const getAllUsersController = async (req, res) => {
-    let role = req.query['role'] || '1'
+    let role = req.query['role'] || 'all'
     role = parseInt(role)
     try {
         const usersData = await getAllUsers(role)
@@ -23,14 +24,16 @@ const getAllUsersController = async (req, res) => {
 
 const getUserProfileController = async (req, res) => {
     const id = req.params['id'] || req.user.userId
-    console.log(id)
     try {
         const userResData = await getUserProfile({ userId: id })
         const { username, password, ...userData } = userResData
-        res.json({
-            status: 200,
-            data: userData
-        })
+        const roleId = userData.role
+        const roleName = await getRoleByRoleId(roleId)
+        userData.role = [roleName]
+            res.json({
+                status: 200,
+                data: userData
+            })
     }
     catch (err) {
         res.status(500).json({
@@ -63,7 +66,7 @@ const deleteUserController = async (req, res) => {
 
     }
 
-    catch(err) {
+    catch (err) {
 
     }
 }

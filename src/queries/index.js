@@ -1,5 +1,5 @@
 const {getUserProfile, addNewUser, getAllUsers} = require('./user-queries')
-const { getRecipes, getNumOfRecipes } = require('./recipe-queries')
+const { getRecipes, getNumOfRecipes, getRecipe } = require('./recipe-queries')
 const { getNumOfRecipeCategories, getRecipeCategories } = require('./recipe-category-queries')
 const { getRoleByRoleId } = require('./role-queries')
 const {getFavouriteRecipes} = require('./favourite-queries')
@@ -13,6 +13,7 @@ module.exports = {
     getNumOfRecipeCategories,
     getRecipeCategories,
     getRecipes,
+    getRecipe,
     getNumOfRecipes,
     getRoleByRoleId,
     getFavouriteRecipes,
