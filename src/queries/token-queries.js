@@ -14,8 +14,23 @@ const getToken = async (token) => {
 }
 
 
-const addToken = async (token) => {
-    const queryString = 'insert into TOKENS(TokenValue) values($1)'
+//add token to table TOKENS
+//table TOKENS has 2 column
+const addToken = async (token, iat) => {
+    const queryString = 'insert into TOKENS(TokenValue, iat) values($1, $2)'
+    const values = [token, iat]
+    try {
+        await postgres.query(queryString, values)
+    }
+    catch (err) {
+        throw new Error('Internal Server Error')
+    }
+}
+
+
+//delete a token
+const deleteToken = async(token) => {
+    const queryString = 'delete from TOKENS where token = $1'
     const values = [token]
     try {
         await postgres.query(queryString, values)
@@ -25,6 +40,20 @@ const addToken = async (token) => {
     }
 }
 
+
+//clear records in TOKENS table
+const clearTOKENS = async() => {
+    const currentTime = (new Date()).getTime()/1000;
+    const queryString = 'delete from TOKENS where ($1 - iat) > 3600';
+    const values = [currentTime];
+    try {
+        await postgres.query(queryString, values);
+    }
+    catch(err) {
+        throw new Error('Internal Server Error');
+    }
+}
+
 module.exports = {
-    getToken, addToken
+    getToken, addToken, deleteToken ,clearTOKENS
 }
