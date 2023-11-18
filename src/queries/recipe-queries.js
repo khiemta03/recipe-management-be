@@ -1,6 +1,6 @@
 const postgres = require('../databases/postgreSQL')
 
-const getRecipes = async (page, per_page, sort_by, category, status = 'Approved') => {
+const getRecipes = async (page, per_page, sort_by, category, status = 'Approved', keyword) => {
 
     let queryString = `select RECIPES.*, AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews\nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
                         \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId\nwhere 1 = 1`
@@ -8,6 +8,15 @@ const getRecipes = async (page, per_page, sort_by, category, status = 'Approved'
     if (category !== 'all') {
         queryString += '\nand CATEGORIES.CategoryId = $4'
         values.push(category)
+    }
+
+    if (keyword) {
+        if (category !== 'all') {
+            queryString += '\nand LOWER(RECIPES.Name) like LOWER($5)'
+        } else {
+            queryString += '\nand LOWER(RECIPES.Name) like LOWER($4)'
+        }
+        values.push(`%${keyword}%`)
     }
 
     queryString += "\nand RECIPES.status = $3"
@@ -21,6 +30,7 @@ const getRecipes = async (page, per_page, sort_by, category, status = 'Approved'
         const formattedData = recipeData.rowCount > 0 ? recipeData.rows : []
         return formattedData
     } catch (err) {
+        console.log(err)
         throw new Error('Lỗi server')
     }
 }
@@ -40,13 +50,24 @@ const getRecipe = async (recipeId) => {
     }
 }
 
-const getNumOfRecipes = async (category = 'all', status = 'Approved') => {
+const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword) => {
     let queryString = `select count(*)\nfrom RECIPES, CATEGORIES\nwhere RECIPES.Category = CATEGORIES.CategoryId`
     let values = [status]
     if (category !== 'all') {
         queryString += '\nand CATEGORIES.CategoryId = $2'
         values.push(category)
     }
+
+    if (keyword) {
+        if (category !== 'all') {
+            queryString += '\nand LOWER(RECIPES.Name) like LOWER($3)'
+        } else {
+            queryString += '\nand LOWER(RECIPES.Name) like LOWER($2)'
+        }
+        values.push(`%${keyword}%`)
+    }
+
+
     queryString += "\nand RECIPES.status = $1"
     try {
         const recipeData = await postgres.query(queryString, values)

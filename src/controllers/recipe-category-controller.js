@@ -19,10 +19,7 @@ const recipeCategoryCountController = async (req, res) => {
 const recipeCategoriesController = async (req, res) => {
     try {
         const recipeCategoryData = await getRecipeCategories()
-        recipeCategoryData.splice(0, 0, {
-            categoryid: 'Tất cả',
-            name: 'Tất cả'
-        })
+
         res.json({
             status: 200,
             data: recipeCategoryData

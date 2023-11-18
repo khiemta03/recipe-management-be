@@ -7,17 +7,14 @@ const getRecipesController = async (req, res) => {
         const category = req.query['category'] || 'all'
         let page = req.query['page'] || 1
         page = parseInt(page)
-        const recipeCount = await getNumOfRecipes(category)
+        const keyword = req.query['keyword'] || null
+        const recipeCount = await getNumOfRecipes(category, 'Approved', keyword)
         let perPage = req.query['per_page'] || recipeCount
         perPage = parseInt(perPage)
         const sortBy = req.query['sort_by'] || 'date'
-        let recipeData = await getRecipes(page, perPage, sortBy, category)
+        const status = 'Approved'
+        let recipeData = await getRecipes(page, perPage, sortBy, category, status, keyword)
 
-        //keyword to search
-        const keyword = req.query['keyword'] || null
-        if (keyword) {
-            recipeData = recipeData.filter(r => r.name.toLowerCase().includes(keyword.toLowerCase()) || r.description.toLowerCase().includes(keyword.toLowerCase()))
-        }
         // add field isFavourite
         const userData = req.user
         if (isEmpty(userData) === false) {
