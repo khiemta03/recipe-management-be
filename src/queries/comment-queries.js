@@ -23,8 +23,8 @@ const getTotalComments = async(recipeId) => {
 
 
 //get comment by recipe's id
-const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'latest') => {
-    const order = sort_by === 'newest' ? 'asc' : 'desc';
+const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest') => {
+    const order = sort_by === 'oldest' ? 'asc' : 'desc';
     let queryString = `select users.Name, Content, Datesubmit, users.UserId as userId, avatar
                         from comments join users on comments.UserId = users.UserId
                         where recipeid = $1
