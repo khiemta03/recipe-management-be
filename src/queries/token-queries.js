@@ -15,10 +15,9 @@ const getToken = async (token) => {
 
 
 //add token to table TOKENS
-//table TOKENS has 2 column
-const addToken = async (token, iat) => {
-    const queryString = 'insert into TOKENS(TokenValue, iat) values($1, $2)'
-    const values = [token, iat]
+const addToken = async (token) => {
+    const queryString = 'insert into TOKENS(TokenValue) values($1)'
+    const values = [token]
     try {
         await postgres.query(queryString, values)
     }

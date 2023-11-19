@@ -8,12 +8,12 @@ const validateToken = async (req, res, next) => {
         try {
             const tokenData = await getToken(token)
             if (isEmpty(tokenData)) {
-                throw new Error('Invalid credentials')
+                throw new Error('Bạn chưa đăng nhập')
             }
             const obj = getObjectFromToken(token)
             const userData = await getUserProfile({ username: obj.username })
             if (isEmpty(userData)) {
-                throw new Error('Invalid credentials')
+                throw new Error('Bạn chưa đăng nhập')
             }
             req.user = {
                 userId: userData.userid,
@@ -32,7 +32,7 @@ const validateToken = async (req, res, next) => {
     else {
         return res.status(403).json({
             status: 403,
-            message: "You don't have permission to access this resource"
+            message: "Vui lòng đăng nhập để truy cập vào tài nguyên này"
         })
     }
 }
