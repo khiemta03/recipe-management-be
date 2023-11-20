@@ -3,13 +3,14 @@ const router = express.Router()
 const { getAllUsersController, getUserProfileController, addNewUserController, deleteUserController, updateUserProfileController } = require('../controllers/index')
 const { validateToken, isSupderAdmin } = require('../middlewares/index')
 const { saveUserAvatar } = require('../middlewares/save-image')
-
+const favouriteRouter = require('./favourite-routes')
 
 router
     .use(validateToken)
+    .use('/favourites', favouriteRouter)
+
 
     .get('/profile', getUserProfileController)
-
     .get('/:id', getUserProfileController)
     .get('/', isSupderAdmin, getAllUsersController)
 

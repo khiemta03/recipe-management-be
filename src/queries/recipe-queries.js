@@ -30,15 +30,14 @@ const getRecipes = async (page, per_page, sort_by, category, status = 'Approved'
         const formattedData = recipeData.rowCount > 0 ? recipeData.rows : []
         return formattedData
     } catch (err) {
-        console.log(err)
         throw new Error('Lỗi server')
     }
 }
 
 const getRecipe = async (recipeId) => {
-    const queryString = `select RECIPES.*, AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews
-                        \nfrom RECIPES left join RATING on RECIPES.RecipeId = RATING.RecipeId where RECIPES.RecipeId = $1
-                        \ngroup by RECIPES.RecipeId`
+    const queryString = `select RECIPES.*, CATEGORIES.Name AS category, AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews
+                        \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId where RECIPES.RecipeId = $1
+                        \ngroup by RECIPES.RecipeId, CATEGORIES.Name`
     const values = [recipeId]
     try {
         const recipeData = await postgres.query(queryString, values)

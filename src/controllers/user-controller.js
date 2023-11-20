@@ -1,8 +1,8 @@
 const { getUserProfile, getAllUsers, addNewUser, deleteUserProfile, updateUserProfile } = require('../queries/user-queries')
 const { getRoleByRoleId } = require('../queries/role-queries')
+
 const { uploadFileToGCP } = require('../helpers/gcp')
 const { isEmpty } = require('../utils/objectUtils')
-const e = require('cors')
 const fs = require('fs').promises
 
 const getAllUsersController = async (req, res) => {
@@ -92,7 +92,10 @@ const deleteUserController = async (req, res) => {
     }
 
     catch (err) {
-        throw new Error('Lỗi server')
+        res.status(500).json({
+            status: 500,
+            message: err.message
+        })
     }
 }
 
@@ -112,14 +115,18 @@ const updateUserProfileController = async (req, res) => {
 
     }
     catch (err) {
-        throw new Error('Lỗi server')
+        res.status(500).json({
+            status: 500,
+            message: err.message
+        })
     }
 }
+
 
 module.exports = {
     getAllUsersController,
     getUserProfileController,
     addNewUserController,
     deleteUserController,
-    updateUserProfileController
+    updateUserProfileController,
 }
