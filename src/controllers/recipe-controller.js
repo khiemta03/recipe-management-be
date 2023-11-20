@@ -145,6 +145,10 @@ const getRecipeController = async (req, res) => {
     }
 }
 
+const getRecipesOfUserController = (req, res) => {
+    
+}
+
 const recipesCountController = async (req, res) => {
     const category = req.query['category'] || 'all'
     try {
