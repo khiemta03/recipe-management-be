@@ -1,7 +1,9 @@
 const { getUserProfile, getAllUsers, addNewUser, deleteUserProfile, updateUserProfile } = require('../queries/user-queries')
 const { getRoleByRoleId } = require('../queries/role-queries')
-const { uploadFileToGCP } = require('../helpers/index')
-
+const { uploadFileToGCP } = require('../helpers/gcp')
+const { isEmpty } = require('../utils/objectUtils')
+const e = require('cors')
+const fs = require('fs').promises
 
 const getAllUsersController = async (req, res) => {
     let role = req.query['role'] || 'all'
@@ -53,33 +55,65 @@ const getUserProfileController = async (req, res) => {
 const addNewUserController = async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-    const email = req.body.email;
+    const email = req.body.email || null;
     const name = req.body.name;
-    const role = req.body.role
-    const avatar = req.body.avatar || null
-
+    const role = req.body.role || 1
     try {
-        await addNewUser(username, password, name, email, role, avatar)
+        const userData = await getUserProfile({ username: username })
+        if (isEmpty(userData)) {
+            await addNewUser(username, password, name, email, role)
+            res.json({
+                status: 200,
+                message: 'Thêm tài khoản thành công'
+            })
+        } else {
+            throw new Error('Username đã tồn tại')
+        }
 
     }
     catch (err) {
-        throw new Error('Internal Server Error')
+        res.status(500).json({
+            status: 500,
+            message: err.message
+        })
     }
 }
 
-const deleteUserController = async (req, res) => {
-    const id = req.body.userId
-    try {
 
+const deleteUserController = async (req, res) => {
+    const userId = req.params['id']
+    try {
+        await deleteUserProfile(userId)
+
+        res.json({
+            status: 200,
+            message: 'Xóa tài khoản thành công'
+        })
     }
 
     catch (err) {
-
+        throw new Error('Lỗi server')
     }
 }
 
 const updateUserProfileController = async (req, res) => {
-    const userId = req.body.userId
+    const userId = req.user.userId
+
+    try {
+        if (req.file) {
+            const url = await uploadFileToGCP('UserAvatar', req.fileName)
+            await addNewAvatar(req.user.userId, url)
+            await fs.unlink('uploads/' + req.fileName)
+        }
+        const password = req.body['password'] || null
+        const name = req.body['name'] || null
+        const email = req.body['email'] || null
+        await updateUserProfile(userId, password, name, email)
+
+    }
+    catch (err) {
+        throw new Error('Lỗi server')
+    }
 }
 
 module.exports = {

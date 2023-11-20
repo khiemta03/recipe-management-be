@@ -2,7 +2,7 @@ const postgres = require('../databases/postgreSQL')
 
 const getRecipes = async (page, per_page, sort_by, category, status = 'Approved', keyword) => {
 
-    let queryString = `select RECIPES.*, AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews\nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
+    let queryString = `select RECIPES.*, CATEGORIES.Name AS category , AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews\nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
                         \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId\nwhere 1 = 1`
     let values = [(page - 1) * per_page, per_page, status]
     if (category !== 'all') {
@@ -20,7 +20,7 @@ const getRecipes = async (page, per_page, sort_by, category, status = 'Approved'
     }
 
     queryString += "\nand RECIPES.status = $3"
-    queryString += '\ngroup by RECIPES.RecipeId'
+    queryString += '\ngroup by RECIPES.RecipeId, CATEGORIES.Name'
     queryString += sort_by === 'date' ? '\norder by DateSubmit Desc' : ''
     queryString += sort_by === 'rating' ? '\norder by AVG(rating.rating) Desc nulls last' : ''
     queryString += '\noffset $1\nlimit $2'

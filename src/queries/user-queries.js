@@ -12,7 +12,7 @@ const getUserProfile = async (obj) => {
         return userFormattedData
     }
     catch (err) {
-        throw new Error('Internal Server Error')
+        throw new Error('Lỗi Server')
     }
 }
 
@@ -25,9 +25,10 @@ const addNewUser = async (username, password, name, email, role = 1, avatar = nu
         await postgres.query(queryString, values);
     }
     catch (err) {
-        throw new Error('Internal Server Error')
+        throw new Error('Lỗi Server')
     }
 }
+
 
 const getAllUsers = async (role = 'all') => {
     let queryString = 'select * from USERS'
@@ -47,7 +48,7 @@ const getAllUsers = async (role = 'all') => {
         return formattedData
     }
     catch (err) {
-        throw new Error('Internal Server Error')
+        throw new Error('Lỗi Server')
     }
 }
 
@@ -59,18 +60,36 @@ const deleteUserProfile = async (userId) => {
         await postgres.query(queryString, values)
     }
     catch (err) {
-        throw new Error('Internal Server Error')
+        throw new Error('Lỗi Server')
     }
 }
 
-const updateUserProfile = async (userId) => {
-    const queryString = 'update USERS\nset'
-    const values = [userId]
+const updateUserProfile = async (userId, password, name, email) => {
+
+    const values = [userId];
+    const setClauses = [];
+
+    if (password !== null) {
+        setClauses.push('password = $2');
+        values.push(password);
+    }
+
+    if (name !== null) {
+        setClauses.push('name = $' + (setClauses.length + 2));
+        values.push(name);
+    }
+
+    if (email !== null) {
+        setClauses.push('email = $' + (setClauses.length + 2));
+        values.push(email);
+    }
+
+    const queryString = `UPDATE USERS SET ${setClauses.join(', ')} WHERE UserId = $1`;
     try {
         await postgres.query(queryString, values)
     }
     catch (err) {
-        throw new Error('Internal Server Error')
+        throw new Error('Lỗi Server')
     }
 }
 
@@ -90,9 +109,10 @@ const getNumOfUsers = async (role = 'all') => {
     try {
         const data = await postgres.query(queryString)
         const formattedData = parseInt(data.rows[0].count)
+        return formattedData
     }
     catch (err) {
-        throw new Error('Internal Server Error')
+        throw new Error('Lỗi Server')
     }
 }
 
@@ -102,5 +122,5 @@ module.exports = {
     getAllUsers,
     deleteUserProfile,
     updateUserProfile,
-    getNumOfUsers
+    getNumOfUsers,
 }
