@@ -25,7 +25,7 @@ const getTotalComments = async(recipeId) => {
 //get comment by recipe's id
 const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest') => {
     const order = sort_by === 'oldest' ? 'asc' : 'desc';
-    let queryString = `select users.Name, Content, Datesubmit, users.UserId as userId, avatar
+    let queryString = `select users.Name, content, datesubmit, users.UserId as userId, avatar
                         from comments join users on comments.UserId = users.UserId
                         where recipeid = $1
                         order by datesubmit ${order}
@@ -76,6 +76,62 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
     }
 }
 
+
+
+
+//add comment
+const addComment = async (recipeId, userId, content = '') => {
+    let date = new Date();
+    date = date.toLocaleDateString();
+    const queryString = `insert into comments(recipeid, userid, content, datesubmit)
+                        values($1, $2, $3, $4)
+                        `;
+    const values = [recipeId, userId, content, date];
+
+    //insert into comments
+    try {
+        await postgres.query(queryString, values);
+    }
+    catch(err) {
+        throw new Error('Internal Server Error');
+    }
+}
+
+
+//remove comment
+const removeComment = async (recipeId, userId, dateSubmit) => {
+    const queryString = `delete from comments where recipeid = $1 and userid = $2 and datesubmit = $3`;
+    const values = [recipeId, userId, dateSubmit];
+
+    //delete from table comments
+    try {
+        await postgres.query(queryString, values);
+    }
+    catch(err) {
+        throw new Error('Internal Server Error');
+    }
+}
+
+
+//update a comment with new content
+const updateComment = async (recipeId, userId, dateSubmit, newContent) => {
+    const queryString = `update comments
+                        set content = $1
+                        where recipeid = $2 and userid = $3 and datesubmit = $4`;
+    const values = [newContent, recipeId, userId, dateSubmit];
+
+    //update new content
+    try {
+        await postgres.query(queryString, values);
+    }
+    catch(err) {
+        throw new Error('Internal Server Error');
+    }
+}
+
+
+
+
 module.exports = {
-    getComments
+    getComments, addComment, removeComment, updateComment
 }
