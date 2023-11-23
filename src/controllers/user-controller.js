@@ -1,6 +1,5 @@
 const { getUserProfile, getAllUsers, addNewUser, deleteUserProfile, updateUserProfile } = require('../queries/user-queries')
 const { getRoleByRoleId } = require('../queries/role-queries')
-
 const { uploadFileToGCP } = require('../helpers/gcp')
 const { isEmpty } = require('../utils/objectUtils')
 const fs = require('fs').promises
@@ -121,6 +120,9 @@ const updateUserProfileController = async (req, res) => {
         })
     }
 }
+
+
+
 
 
 module.exports = {
