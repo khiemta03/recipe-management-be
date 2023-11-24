@@ -7,7 +7,7 @@ const path = require('path')
 
 const uploadFileToGCP = async (req) => {
     const imageBuffer = req.file.buffer;
-    const fileName = req.user.userId + path.extname(req.file.originalname);
+    const fileName = req.fileName + path.extname(req.file.originalname);
     const folderName = req.folderName
     try {
         const destination = folderName + '/' + fileName;

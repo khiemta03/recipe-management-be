@@ -104,6 +104,7 @@ const updateUserProfileController = async (req, res) => {
     try {
         let avatar = null
         if (req.file) {
+            req.fileName = userId
             req.folderName = 'UserAvatar'
             avatar = await uploadFileToGCP(req)
         }
