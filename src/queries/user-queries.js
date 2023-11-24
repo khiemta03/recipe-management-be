@@ -64,10 +64,10 @@ const deleteUserProfile = async (userId) => {
     }
 }
 
-const updateUserProfile = async (userId, password, name, email) => {
+const updateUserProfile = async (userId, password, name, email, avatar) => {
 
-    const values = [userId];
-    const setClauses = [];
+    let values = [userId];
+    let setClauses = [];
 
     if (password !== null) {
         setClauses.push('password = $2');
@@ -82,6 +82,11 @@ const updateUserProfile = async (userId, password, name, email) => {
     if (email !== null) {
         setClauses.push('email = $' + (setClauses.length + 2));
         values.push(email);
+    }
+
+    if (avatar !== null) {
+        setClauses.push('avatar = $' + (setClauses.length + 2));
+        values.push(avatar);
     }
 
     const queryString = `UPDATE USERS SET ${setClauses.join(', ')} WHERE UserId = $1`;

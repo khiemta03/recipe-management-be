@@ -2,9 +2,9 @@ const express = require('express')
 const router = express.Router()
 const { getUserProfileController, updateUserProfileController, getRecipesOfUserController } = require('../controllers/index')
 const { validateToken } = require('../middlewares/index')
-const { saveUserAvatar } = require('../middlewares/save-image')
 const favouriteRouter = require('./favourite-routes')
 const userRecipeRouter = require('./user-recipe-routes')
+const upload = require('../helpers/multer')
 
 router
     .use(validateToken)
@@ -13,6 +13,6 @@ router
 
     .get('/profile', getUserProfileController)
 
-    .put('/profile', saveUserAvatar, updateUserProfileController)
+    .put('/profile', upload.single('image'), updateUserProfileController)
 
 module.exports = router
