@@ -13,6 +13,6 @@ router
 
     .get('/profile', getUserProfileController)
 
-    .put('/', saveUserAvatar, updateUserProfileController)
+    .put('/profile', saveUserAvatar, updateUserProfileController)
 
 module.exports = router
