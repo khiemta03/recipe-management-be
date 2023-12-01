@@ -1,4 +1,4 @@
-const { getComments } = require('../queries/index')
+const { getComments, addComment } = require('../queries/index')
 const { isEmpty } = require('../utils/objectUtils')
 
 
@@ -33,6 +33,29 @@ const getCommentsController = async (req, res) => {
 }
 
 
+
+//add comment controller
+const addCommentController = async (req, res) => {
+    try {
+        //get information
+        const recipeId = req.params['recipeId'];
+        const content = req.body.content;
+        const userId = req.user.userId;
+
+        //insert into databse
+        await addComment(recipeId, userId, content);
+        res.json('add comment successfully');
+
+    }
+    catch(err) {
+        res.status(500).json({
+            status: 500,
+            message: err.message
+        })
+    }
+}
+
+
 module.exports = { 
-    getCommentsController 
+    getCommentsController , addCommentController
 }

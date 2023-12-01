@@ -4,7 +4,7 @@ const { getNumOfRecipeCategories, getRecipeCategories } = require('./recipe-cate
 const { getRoleByRoleId } = require('./role-queries')
 const {getFavouriteRecipes} = require('./favourite-queries')
 const {getToken, addToken} = require('./token-queries')
-const {getComments} = require('./comment-queries')
+const {getComments, addComment, removeComment, updateComment} = require('./comment-queries')
 
 
 module.exports = {
@@ -19,5 +19,8 @@ module.exports = {
     getFavouriteRecipes,
     getToken,
     addToken,
-    getComments
+    getComments,
+    addComment,
+    removeComment,
+    updateComment
 }
