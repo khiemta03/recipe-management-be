@@ -1,4 +1,4 @@
-const { getComments, addComment } = require('../queries/index')
+const { getComments, addComment, removeComment } = require('../queries/index')
 const { isEmpty } = require('../utils/objectUtils')
 
 
@@ -56,6 +56,32 @@ const addCommentController = async (req, res) => {
 }
 
 
+
+//remove comment controller
+const removeCommentController = async (req, res) => {
+    try {
+        //get information
+        const recipeId = req.params['recipeId'];
+        const userId = req.user.userId;
+        
+        //get date submit, client must attach on request
+        const dateSubmit = req.header['dateSubmit'];
+
+        
+        //delete from comments
+        await removeComment(recipeId, userId, dateSubmit);
+        res.json('remove comment successfully');
+
+    }
+    catch(err) {
+        res.status(500).json({
+            status: 500,
+            message: err.message
+        })
+    }
+}
+
+
 module.exports = { 
-    getCommentsController , addCommentController
+    getCommentsController , addCommentController, removeCommentController
 }
