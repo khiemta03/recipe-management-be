@@ -2,7 +2,7 @@ const {loginController, registerController, logoutController} = require('./auth-
 const {recipeCategoriesController, recipeCategoryCountController} = require('./recipe-category-controller')
 const {getRecipesController, recipesCountController} = require('./recipe-controller')
 const {getAllUsersController, getUserProfileController, addNewUserController, deleteUserController, updateUserProfileController} = require('./user-controller')
-const {getCommentsController, addCommentController, removeCommentController} = require('./comment-controller');
+const {getCommentsController, addCommentController, removeCommentController, updateCommentController} = require('./comment-controller');
 
 module.exports = {
     loginController,
@@ -19,5 +19,6 @@ module.exports = {
     updateUserProfileController,
     getCommentsController,
     addCommentController,
-    removeCommentController
+    removeCommentController,
+    updateCommentController
 }

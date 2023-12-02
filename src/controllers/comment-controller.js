@@ -1,4 +1,4 @@
-const { getComments, addComment, removeComment } = require('../queries/index')
+const { getComments, addComment, removeComment, updateComment } = require('../queries/index')
 const { isEmpty } = require('../utils/objectUtils')
 
 
@@ -79,6 +79,31 @@ const removeCommentController = async (req, res) => {
 }
 
 
+//update comment
+const updateCommentController = async (req, res) => {
+    try {
+        //get comment id
+        const commentId = req.params.commentId;
+        //get user id
+        const userId = req.user.userId;
+        //get content
+        const newContent = req.body.newContent;
+        
+        //delete from comments
+        await updateComment(commentId, userId, newContent);
+        res.json('update successfully');
+
+    }
+    catch(err) {
+        res.status(500).json({
+            status: 500,
+            message: err.message
+        })
+    }
+}
+
+
+
 module.exports = { 
-    getCommentsController , addCommentController, removeCommentController
+    getCommentsController , addCommentController, removeCommentController, updateCommentController
 }

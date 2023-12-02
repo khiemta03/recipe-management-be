@@ -117,11 +117,16 @@ const removeComment = async (commentId, userId) => {
 
 
 //update a comment with new content
-const updateComment = async (recipeId, userId, dateSubmit, newContent) => {
-    const queryString = `update comments
-                        set content = $1
-                        where recipeid = $2 and userid = $3 and datesubmit = $4`;
-    const values = [newContent, recipeId, userId, dateSubmit];
+const updateComment = async (commentId, userId ,newContent) => {
+    //get date
+    let date = new Date();
+    date = date.toLocaleDateString();
+
+    const queryString = `update comments 
+                        set content = $1, datesubmit = $2
+                        where commentid = $3 and userid = $4`;
+
+    const values = [newContent, date, commentId, userId];
 
     //update new content
     try {
