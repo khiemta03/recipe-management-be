@@ -60,16 +60,13 @@ const addCommentController = async (req, res) => {
 //remove comment controller
 const removeCommentController = async (req, res) => {
     try {
-        //get information
-        const recipeId = req.params['recipeId'];
+        //get comment id
+        const commentId = req.params.commentId;
+        //get user id
         const userId = req.user.userId;
         
-        //get date submit, client must attach on request
-        const dateSubmit = req.header['dateSubmit'];
-
-        
         //delete from comments
-        await removeComment(recipeId, userId, dateSubmit);
+        await removeComment(commentId, userId);
         res.json('remove comment successfully');
 
     }

@@ -6,7 +6,7 @@ const {validateToken} = require('../middlewares/index');
 
 router.get('/:recipeId', getCommentsController);
 router.post('/add/:recipeId', validateToken, addCommentController);
-router.delete('/:recipeId', validateToken, removeCommentController);
+router.delete('/:commentId', validateToken, removeCommentController);
 
 
 

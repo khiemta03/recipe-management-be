@@ -25,7 +25,7 @@ const getTotalComments = async(recipeId) => {
 //get comment by recipe's id
 const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest') => {
     const order = sort_by === 'oldest' ? 'asc' : 'desc';
-    let queryString = `select users.Name, content, datesubmit, users.UserId as userId, avatar
+    let queryString = `select commentId, recipeId ,users.Name, content, datesubmit, users.UserId as userId, avatar
                         from comments join users on comments.UserId = users.UserId
                         where recipeid = $1
                         order by datesubmit ${order}
@@ -55,13 +55,14 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
             const rows = data.rows;
             
             rows.forEach((item)=>{
-                const date = new Date(item.datesubmit);
                 result.data.push({
+                    commentId: item.commentid,
+                    recipeId: item.recipeid,
                     userId: item.userid,
                     userName: item.name,
                     avatar: item.avatar,
                     content: item.content,
-                    dateSubmit: date
+                    dateSubmit: item.datesubmit
                 })
             })
 
@@ -99,9 +100,11 @@ const addComment = async (recipeId, userId, content = '') => {
 
 
 //remove comment
-const removeComment = async (recipeId, userId, dateSubmit) => {
-    const queryString = `delete from comments where recipeid = $1 and userid = $2 and datesubmit = $3`;
-    const values = [recipeId, userId, dateSubmit];
+const removeComment = async (commentId, userId) => {
+    // console.log(commentId);
+    //delete comment by id
+    const queryString = `delete from comments where commentid = $1 and userid = $2`;
+    const values = [commentId, userId];
 
     //delete from table comments
     try {
