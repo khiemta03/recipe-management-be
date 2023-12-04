@@ -28,7 +28,7 @@ module.exports = {
     getCommentsController,
     addCommentController,
     removeCommentController,
-    updateCommentController
+    updateCommentController,
     getRolesController,
     getFavouriteRecipesController,
     addNewFavouriteRecipeController,

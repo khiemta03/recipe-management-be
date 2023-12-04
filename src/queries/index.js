@@ -24,6 +24,6 @@ module.exports = {
     getComments,
     addComment,
     removeComment,
-    updateComment
+    updateComment,
     getAllRoles
 }
