@@ -1,11 +1,11 @@
 const {getUserProfile, addNewUser, getAllUsers} = require('./user-queries')
-const { getRecipes, getNumOfRecipes } = require('./recipe-queries')
+const { getRecipes, getNumOfRecipes, getRecipe } = require('./recipe-queries')
 const { getNumOfRecipeCategories, getRecipeCategories } = require('./recipe-category-queries')
 const { getRoleByRoleId } = require('./role-queries')
 const {getFavouriteRecipes} = require('./favourite-queries')
 const {getToken, addToken, deleteToken} = require('./token-queries')
 const {getComments, addComment, removeComment, updateComment} = require('./comment-queries')
-
+const {getAllRoles} = require('./role-queries')
 
 module.exports = {
     getUserProfile,
@@ -14,6 +14,7 @@ module.exports = {
     getNumOfRecipeCategories,
     getRecipeCategories,
     getRecipes,
+    getRecipe,
     getNumOfRecipes,
     getRoleByRoleId,
     getFavouriteRecipes,
@@ -24,4 +25,5 @@ module.exports = {
     addComment,
     removeComment,
     updateComment
+    getAllRoles
 }

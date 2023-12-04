@@ -16,6 +16,20 @@ const getRoleByRoleId = async (roleId) => {
 }
 
 
+const getAllRoles = async () => {
+    const queryString = 'select * from roles'
+    const values = []
+    try {
+        const roleQueryData = await postgres.query(queryString, values)
+        const formattedData = roleQueryData.rowCount > 0 ? roleQueryData.rows : []
+        return formattedData
+    }
+    catch (err) {
+        throw new Error('Internal Server Error')
+    }
+}
+
 module.exports = {
-    getRoleByRoleId
+    getRoleByRoleId,
+    getAllRoles
 }
