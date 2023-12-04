@@ -4,6 +4,9 @@ const getToken = async (token) => {
     const queryString = 'select * from TOKENS where TokenValue = $1'
     const values = [token]
     try {
+        //delete token out of date
+        await clearTOKENS();
+        //query to get token
         const tokenQueryData = await postgres.query(queryString, values)
         const formattedData = tokenQueryData.rowCount >= 1 ? tokenQueryData.rows[0] : {}
         return formattedData
@@ -15,10 +18,9 @@ const getToken = async (token) => {
 
 
 //add token to table TOKENS
-//table TOKENS has 2 column
-const addToken = async (token, iat) => {
-    const queryString = 'insert into TOKENS(TokenValue, iat) values($1, $2)'
-    const values = [token, iat]
+const addToken = async (token) => {
+    const queryString = 'insert into TOKENS(TokenValue) values($1)'
+    const values = [token]
     try {
         await postgres.query(queryString, values)
     }
@@ -43,11 +45,12 @@ const deleteToken = async(token) => {
 
 //clear records in TOKENS table
 const clearTOKENS = async() => {
-    const currentTime = (new Date()).getTime()/1000;
-    const queryString = 'delete from TOKENS where ($1 - iat) > 3600';
-    const values = [currentTime];
+    //delete after 2 hours
+    const queryString = `delete from tokens
+                        where (current_timestamp > (created_time + '2 hours'));`
+
     try {
-        await postgres.query(queryString, values);
+        await postgres.query(queryString);
     }
     catch(err) {
         throw new Error('Internal Server Error');

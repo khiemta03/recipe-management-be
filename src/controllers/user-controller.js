@@ -1,6 +1,5 @@
 const { getUserProfile, getAllUsers, addNewUser, deleteUserProfile, updateUserProfile } = require('../queries/user-queries')
 const { getRoleByRoleId } = require('../queries/role-queries')
-
 const { uploadFileToGCP } = require('../helpers/gcp')
 const { isEmpty } = require('../utils/objectUtils')
 const fs = require('fs').promises
@@ -103,24 +102,32 @@ const updateUserProfileController = async (req, res) => {
     const userId = req.user.userId
 
     try {
+        let avatar = null
         if (req.file) {
-            const url = await uploadFileToGCP('UserAvatar', req.fileName)
-            await addNewAvatar(req.user.userId, url)
-            await fs.unlink('uploads/' + req.fileName)
+            req.fileName = userId
+            req.folderName = 'UserAvatar'
+            avatar = await uploadFileToGCP(req)
         }
         const password = req.body['password'] || null
         const name = req.body['name'] || null
         const email = req.body['email'] || null
-        await updateUserProfile(userId, password, name, email)
-
+        await updateUserProfile(userId, password, name, email, avatar)
+        res.json({
+            status: 200,
+            message: 'Cập nhật profile thành công'
+        })
     }
     catch (err) {
+        console.log(err)
         res.status(500).json({
             status: 500,
             message: err.message
         })
     }
 }
+
+
+
 
 
 module.exports = {

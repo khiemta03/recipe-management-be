@@ -19,8 +19,8 @@ const isTokenValid = (token) => {
 
 const generateNewToken = (obj) => {
     try {
-        //create token has an hour expires
-        const newToken = jwt.sign(obj, secretKey, {expiresIn: 3600})
+        //create token has 2 hours expires
+        const newToken = jwt.sign(obj, secretKey, {expiresIn: 7200})
         
         return newToken
     }

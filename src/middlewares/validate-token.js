@@ -32,7 +32,7 @@ const validateToken = async (req, res, next) => {
     else {
         return res.status(403).json({
             status: 403,
-            message: "Bạn không có quyền truy cập vào tài nguyên này"
+            message: "Vui lòng đăng nhập để truy cập vào tài nguyên này"
         })
     }
 }
