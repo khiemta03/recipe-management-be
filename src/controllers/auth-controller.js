@@ -15,9 +15,9 @@ const loginController = async (req, res, next) => {
 
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username
-            throw new Error('Invalid credentials')
+            throw new Error('Tên đăng nhập không hợp lệ')
         } else if (userData.password !== password) {
-            throw new Error('Invalid credentials')
+            throw new Error('Mật khẩu không chính xác')
         }
         else {
             // Database has this username, so we send a success message with a token
@@ -32,7 +32,7 @@ const loginController = async (req, res, next) => {
             res.status(200).json({
                 accessToken: token,
                 status: 200,
-                message: 'Login successfully',
+                message: 'Đăng nhập thành công',
                 roles: [userData.role]
             })
         }
@@ -71,12 +71,12 @@ const registerController = async (req, res, next) => {
             res.status(200).json({
                 status: 200,
                 accessToken: token,
-                message: 'Sign up successfully',
+                message: 'Đăng ký thành công',
                 role: [role]
             })
         } else {
             // Database has this username
-            throw new Error('Username is exists')
+            throw new Error('Tên đăng nhập đã tồn tại')
         }
     }
     catch (err) {
@@ -99,7 +99,7 @@ const logoutController = async(req, res, next) => {
             await deleteToken(token);
             res.status(200).json({
                 status: 200,
-                message: 'Log out successfully',
+                message: 'Đăng xuất thành công',
             })
         }
     }
