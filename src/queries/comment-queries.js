@@ -1,10 +1,11 @@
 const postgres = require('../databases/postgreSQL')
 
 
+//get total comment in level 1, don't care about reply comments
 const getTotalComments = async(recipeId) => {
     let queryString = `select count(*) as total
                         from comments
-                        where recipeid = $1`;
+                        where recipeid = $1 and replyTo is null`;
     let values = [recipeId];
 
     try {
@@ -22,12 +23,48 @@ const getTotalComments = async(recipeId) => {
 }
 
 
+//get reply comments
+const getReplyComments = async (commentId) => {
+    const qureyString = `select commentId, recipeId ,users.Name, content, datesubmit, users.UserId as userId, avatar, replyto
+                        from comments join users on comments.UserId = users.UserId
+                        where replyto = $1`;
+    const value = [commentId];
+
+    try {
+        //query in database
+        const data = await postgres.query(queryString, value);
+        const result = [];
+        if(data.rowCount > 0) {
+            const rows = data.rows;
+            
+            rows.forEach((item)=>{
+                result.push({
+                    commentId: item.commentid,
+                    recipeId: item.recipeid,
+                    userId: item.userid,
+                    userName: item.name,
+                    avatar: item.avatar,
+                    content: item.content,
+                    dateSubmit: item.datesubmit,
+                    replyTo: item.replyto
+                })
+            })
+        }
+
+        return result;
+    }
+    catch(err) {
+        throw new Error('Internal Server Error');
+    }
+}
+
+
 //get comment by recipe's id
 const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest') => {
     const order = sort_by === 'oldest' ? 'asc' : 'desc';
     let queryString = `select commentId, recipeId ,users.Name, content, datesubmit, users.UserId as userId, avatar
                         from comments join users on comments.UserId = users.UserId
-                        where recipeid = $1
+                        where recipeid = $1 and replyTo is null
                         order by datesubmit ${order}
                         offset $2
                         limit $3`
@@ -50,11 +87,15 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
         if(total == 0){
             return result;
         }
+        
         const data = await postgres.query(queryString, values);
         if(data.rowCount > 0) {
             const rows = data.rows;
             
-            rows.forEach((item)=>{
+            for(item of rows) {
+                //get reply comments
+                const subComments = await getReplyComments(item.commentid);
+
                 result.data.push({
                     commentId: item.commentid,
                     recipeId: item.recipeid,
@@ -62,10 +103,10 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
                     userName: item.name,
                     avatar: item.avatar,
                     content: item.content,
-                    dateSubmit: item.datesubmit
+                    dateSubmit: item.datesubmit,
+                    replyComments: subComments
                 })
-            })
-
+            }
             return result;
         }
         else{
