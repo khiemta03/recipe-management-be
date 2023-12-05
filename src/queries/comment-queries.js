@@ -25,9 +25,12 @@ const getTotalComments = async(recipeId) => {
 
 //get reply comments
 const getReplyComments = async (commentId) => {
-    const queryString = `select commentId, recipeId ,users.Name, content, datesubmit, users.UserId as userId, avatar, replyto
-                        from comments join users on comments.UserId = users.UserId
-                        where replyto = $1`;
+    const queryString = `select commentId, recipeId ,users.Name, content, datesubmit, 
+                                users.UserId as userId, avatar, replyto
+                        from comments join users on comments.UserId = users.UserId 
+                        where replyto = $1
+                        order by datesubmit asc`;
+
     const value = [commentId];
 
     try {
@@ -62,12 +65,14 @@ const getReplyComments = async (commentId) => {
 //get comment by recipe's id
 const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest') => {
     const order = sort_by === 'oldest' ? 'asc' : 'desc';
+    
     let queryString = `select commentId, recipeId ,users.Name, content, datesubmit, users.UserId as userId, avatar
                         from comments join users on comments.UserId = users.UserId
                         where recipeid = $1 and replyTo is null
                         order by datesubmit ${order}
                         offset $2
-                        limit $3`
+                        limit $3`;
+
     const offset = (page-1)*per_page;
     const limit = per_page;
     
@@ -76,6 +81,11 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
     //query in database
     try {
         const total = Number(await getTotalComments(recipeId));
+        if(per_page > total) {
+            per_page = total;
+        }
+
+        //result return to client
         let result = {
             total: total,
             page: page,
@@ -109,7 +119,7 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
                     replyComments: subComments
                 })
             }
-            console.log(result)
+            // console.log(result)
             return result;
         }
         else{
