@@ -25,7 +25,7 @@ const getTotalComments = async(recipeId) => {
 
 //get reply comments
 const getReplyComments = async (commentId) => {
-    const qureyString = `select commentId, recipeId ,users.Name, content, datesubmit, users.UserId as userId, avatar, replyto
+    const queryString = `select commentId, recipeId ,users.Name, content, datesubmit, users.UserId as userId, avatar, replyto
                         from comments join users on comments.UserId = users.UserId
                         where replyto = $1`;
     const value = [commentId];
@@ -87,14 +87,16 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
         if(total == 0){
             return result;
         }
-        
+
         const data = await postgres.query(queryString, values);
         if(data.rowCount > 0) {
             const rows = data.rows;
+            // console.log(rows);
             
             for(item of rows) {
                 //get reply comments
                 const subComments = await getReplyComments(item.commentid);
+                // console.log(subComments);
 
                 result.data.push({
                     commentId: item.commentid,
@@ -107,6 +109,7 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
                     replyComments: subComments
                 })
             }
+            console.log(result)
             return result;
         }
         else{
@@ -122,16 +125,18 @@ const getComments = async (recipeId, page = 1, per_page = 10, sort_by = 'newest'
 
 
 //add comment
-const addComment = async (recipeId, userId, content = '') => {
-    let date = new Date();
-    date = date.toLocaleDateString();
-    const queryString = `insert into comments(recipeid, userid, content, datesubmit)
+const addComment = async (recipeId, userId, content = '', replyTo = null) => {
+    // let date = new Date();
+    // date = date.toLocaleDateString();
+
+    const queryString = `insert into comments(recipeid, userid, content, replyto)
                         values($1, $2, $3, $4)
                         `;
-    const values = [recipeId, userId, content, date];
 
-    //insert into comments
+    const values = [recipeId, userId, content, replyTo];
+
     try {
+        //insert into comments
         await postgres.query(queryString, values);
     }
     catch(err) {
