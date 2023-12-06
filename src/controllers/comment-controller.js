@@ -1,5 +1,5 @@
 const { getComments, addComment, removeComment, updateComment } = require('../queries/index')
-const { isEmpty } = require('../utils/objectUtils')
+
 
 
 //get comments
@@ -9,6 +9,7 @@ const getCommentsController = async (req, res) => {
         page = parseInt(page);
         let per_page = req.query['per_page'] || 10;
         per_page = parseInt(per_page);
+        
         const sort_by = req.query['sort_by'] || 'newest';
         const recipeId = req.params['recipeId'];
 
@@ -42,8 +43,11 @@ const addCommentController = async (req, res) => {
         const content = req.body.content;
         const userId = req.user.userId;
 
+        // reply to comment id
+        const replyTo = req.body.replyTo; 
+
         //insert into databse
-        await addComment(recipeId, userId, content);
+        await addComment(recipeId, userId, content, replyTo);
         res.json('add comment successfully');
 
     }
