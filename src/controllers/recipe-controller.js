@@ -1,5 +1,5 @@
 const { getRecipes, getNumOfRecipes, getFavouriteRecipes, getRecipe, getUserProfile, getRoleByRoleId } = require('../queries/index')
-const { getRecipesOfUser, getUserRecipeCount, addNewRecipe, updateRecipe, changeRecipeStatus } = require('../queries/recipe-queries')
+const { getRecipesOfUser, getUserRecipeCount, addNewRecipe, updateRecipe, changeRecipeStatus, getRecipeCountStatistics } = require('../queries/recipe-queries')
 const { isInFavourites } = require('../queries/favourite-queries')
 const { isEmpty } = require('../utils/objectUtils')
 const { uploadFileToGCP } = require('../helpers/gcp')
@@ -310,7 +310,7 @@ const changeRecipeStatusController = async (req, res) => {
 
         } else if (userRole === 1 && recipe.author !== userId) {
             throw {
-                status: 403 ,
+                status: 403,
                 message: 'Bạn không có quyền thay đổi'
             }
         }
@@ -319,6 +319,80 @@ const changeRecipeStatusController = async (req, res) => {
         return res.json({
             status: 200,
             message: 'Thay đổi trạng thái thành công'
+        })
+    }
+    catch (err) {
+        return res.status(err.status).json({
+            status: err.status,
+            message: err.message
+        })
+    }
+}
+
+
+const getRecipeStatisticsOfAdmin = async (req, res) => {
+    const year = req.query['year'] || new Date().getFullYear()
+    const category = req.query['category'] || null
+    const status = req.query['status'] || null
+
+    try {
+        const recipeCountList = await getRecipeCountStatistics({ year, category, status })
+
+        return res.json({
+            status: 200,
+            category: category,
+            year: year,
+            status: status,
+            data: recipeCountList
+        })
+    }
+    catch (err) {
+        return res.status(err.status).json({
+            status: err.status,
+            message: err.message
+        })
+    }
+
+
+}
+
+
+const getRecipeStatisticsOfUser = async (req, res) => {
+    const year = req.query['year'] || new Date().getFullYear()
+    const userId = req.user.userId
+
+    try {
+        const recipeCountList = await getRecipeCountStatistics({ year, status: 'Approved', userId })
+
+        return res.json({
+            status: 200,
+            year: year,
+            data: recipeCountList
+        })
+    }
+    catch (err) {
+        return res.status(err.status).json({
+            status: err.status,
+            message: err.message
+        })
+    }
+}
+
+const getRecipeCountOfUser = async (req, res) => {
+    const userId = req.user.userId
+    const category = req.query['category'] || 'all'
+    const status = req.query['status']
+
+    try {
+        const recipeCount = await getUserRecipeCount(userId, category, status)
+
+        return res.json({
+            status: 200,
+            category: category,
+            status: status,
+            data: {
+                count: recipeCount
+            }
         })
     }
     catch (err) {
@@ -338,5 +412,8 @@ module.exports = {
     getRecipesOfUserController,
     addNewRecipeController,
     updateRecipeController,
-    changeRecipeStatusController
+    changeRecipeStatusController,
+    getRecipeStatisticsOfAdmin,
+    getRecipeStatisticsOfUser,
+    getRecipeCountOfUser
 }

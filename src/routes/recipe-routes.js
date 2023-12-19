@@ -7,7 +7,7 @@ const { getRecipesController,
     getDeletedRecipesController } = require('../controllers/index')
 const { hasToken, isAdmin, validateToken } = require('../middlewares/index')
 
-const { changeRecipeStatusController } = require('../controllers/recipe-controller')
+const { changeRecipeStatusController, getRecipeStatisticsOfAdmin } = require('../controllers/recipe-controller')
 
 
 
@@ -15,6 +15,7 @@ const { changeRecipeStatusController } = require('../controllers/recipe-controll
 router
     .get('/pending', validateToken, isAdmin, getPendingRecipesController)
     .get('/deleted', validateToken, isAdmin, getDeletedRecipesController)
+    .get('/count/statistic', validateToken, isAdmin, getRecipeStatisticsOfAdmin)
     .get('/count', recipesCountController)
     .get('/:id', hasToken, getRecipeController)
     .get('/', hasToken, getRecipesController)
