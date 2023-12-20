@@ -3,6 +3,7 @@ const { getRecipesOfUser, getUserRecipeCount, addNewRecipe, updateRecipe, change
 const { isInFavourites } = require('../queries/favourite-queries')
 const { isEmpty } = require('../utils/objectUtils')
 const { uploadFileToGCP } = require('../helpers/gcp')
+const boolean = require('../utils/booleanUtils');
 
 // get all approved recipes
 const getRecipesController = async (req, res) => {
@@ -116,10 +117,10 @@ const getDeletedRecipesController = async (req, res) => {
 
 // get specific recipe by id
 const getRecipeController = async (req, res) => {
-    const id = req.params['id']
+    let id = req.params['id']
 
     try {
-
+        id = boolean.uuidValidate(id);
         const recipeData = await getRecipe(id)
         //check user
         const userData = req.user
@@ -176,9 +177,10 @@ const recipesCountController = async (req, res) => {
 }
 
 const getRecipesOfUserController = async (req, res) => {
-    const userId = req.user.userId
+    let userId = req.user.userId
 
     try {
+        userId = boolean.uuidValidate(userId);
         const category = req.query['category'] || 'all'
         const status = req.query['status'] || null
         let page = req.query['page'] || 1
@@ -213,8 +215,9 @@ const getRecipesOfUserController = async (req, res) => {
 
 
 const addNewRecipeController = async (req, res) => {
-    const userId = req.user.userId
+    let userId = req.user.userId
     try {
+        userId = boolean.uuidValidate(userId);
         const name = req.body['name']
         const description = req.body['description']
         const estimatedTime = req.body['estimatedTime']
@@ -247,9 +250,11 @@ const addNewRecipeController = async (req, res) => {
 
 
 const updateRecipeController = async (req, res) => {
-    const userId = req.user.userId
-    const recipeId = req.params['id']
+    let userId = req.user.userId
+    let recipeId = req.params['id']
     try {
+        userId = boolean.uuidValidate(userId);
+        recipeId = boolean.uuidValidate(recipeId);
         const recipe = await getRecipe(recipeId)
         if (isEmpty(recipe) || recipe.author !== userId) {
             throw {
@@ -294,12 +299,14 @@ const updateRecipeController = async (req, res) => {
 }
 
 const changeRecipeStatusController = async (req, res) => {
-    const userId = req.user.userId
+    let userId = req.user.userId
     const userRole = req.user.role
-    const recipeId = req.params['id']
+    let recipeId = req.params['id']
     const newStatus = req.body['status']
 
     try {
+        userId = boolean.uuidValidate(userId);
+        recipeId = boolean.uuidValidate(recipeId);
         const recipe = await getRecipe(recipeId)
         if (isEmpty(recipe)) {
             throw {

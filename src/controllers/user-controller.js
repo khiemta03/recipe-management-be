@@ -3,7 +3,7 @@ const { getRoleByRoleId } = require('../queries/role-queries')
 const { uploadFileToGCP } = require('../helpers/gcp')
 const { isEmpty } = require('../utils/objectUtils')
 const fs = require('fs').promises
-
+const boolean = require('../utils/booleanUtils');
 const getAllUsersController = async (req, res) => {
     let role = req.query['role'] || 'all'
     role = parseInt(role)
@@ -30,8 +30,9 @@ const getAllUsersController = async (req, res) => {
 }
 
 const getUserProfileController = async (req, res) => {
-    const id = req.params['id'] || req.user.userId
+    let id = req.params['id'] || req.user.userId
     try {
+        id = boolean.uuidValidate(id);
         const userResData = await getUserProfile({ userId: id })
         const { username, password, ...userData } = userResData
         const roleId = userData.role
@@ -52,12 +53,16 @@ const getUserProfileController = async (req, res) => {
 }
 
 const addNewUserController = async (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
-    const email = req.body.email || null;
-    const name = req.body.name;
+    let username = req.body.username;
+    let password = req.body.password;
+    let email = req.body.email || null;
+    let name = req.body.name;
     const role = req.body.role || 1
     try {
+        username = boolean.usernameValidate(username);
+        password = boolean.passwordValidate(password);
+        email = boolean.emailValidate(email);
+        name = boolean.fullnameValidate(name);
         const userData = await getUserProfile({ username: username })
         if (isEmpty(userData)) {
             await addNewUser(username, password, name, email, role)
@@ -80,8 +85,9 @@ const addNewUserController = async (req, res) => {
 
 
 const deleteUserController = async (req, res) => {
-    const userId = req.params['id']
+    let userId = req.params['id']
     try {
+        userId = boolean.uuidValidate(userId);
         await deleteUserProfile(userId)
 
         res.json({
@@ -99,9 +105,9 @@ const deleteUserController = async (req, res) => {
 }
 
 const updateUserProfileController = async (req, res) => {
-    const userId = req.user.userId
-
+    let userId = req.user.userId
     try {
+        userId = boolean.uuidValidate(userId);
         let avatar = null
         if (req.file) {
             req.fileName = userId
