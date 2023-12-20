@@ -1,4 +1,5 @@
 const { getUserProfile, addNewUser, getRoleByRoleId, addToken, deleteToken } = require('../queries/index')
+const boolean = require('../utils/booleanUtils');
 
 
 // ? Utils
@@ -7,10 +8,11 @@ const tokenUtils = require('../utils/tokenUtils')
 
 // login handler
 const loginController = async (req, res, next) => {
-    const username = req.body.username
-    const password = req.body.password
-
+    let username = req.body.username;
+    let password = req.body.password;
     try {
+        username = boolean.usernameValidate(username);
+        password = boolean.passwordValidate(password);
         const userData = await getUserProfile({ username: username })
 
         if (objectUtils.isEmpty(userData)) {
@@ -48,13 +50,15 @@ const loginController = async (req, res, next) => {
 
 // register
 const registerController = async (req, res, next) => {
-    const username = req.body.username;
-    const password = req.body.password;
-    const email = req.body.email;
-    const name = req.body.name;
-
-
+    let username = req.body.username;
+    let password = req.body.password;
+    let email = req.body.email;
+    let name = req.body.name;
     try {
+        username = boolean.usernameValidate(username);
+        password = boolean.passwordValidate(password);
+        email = boolean.emailValidate(email);
+        name =boolean.fullnameValidate(name);
         const userData = await getUserProfile({ username: username })
 
         if (objectUtils.isEmpty(userData)) {

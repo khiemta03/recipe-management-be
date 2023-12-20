@@ -1,5 +1,3 @@
-
-
 const usernameValidate = (username) => {
     const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]{3,23}$/;
     if (username === null || username === undefined) {
@@ -13,20 +11,20 @@ const usernameValidate = (username) => {
     return username;
 }
 
-const passwordValidate = (password) =>{
+const passwordValidate = (password) => {
     const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
-    if (password === null || password  === undefined) {
+    if (password === null || password === undefined) {
         throw new Error("Mật khẩu không hợp lệ");
     }
 
-    if (!PWD_REGEX.test(password )) {
+    if (!PWD_REGEX.test(password)) {
         throw new Error("Mật khẩu không hợp lệ");
     }
 
-    return password ;
+    return password;
 }
 
-const uuidValidate = (uuid) =>{
+const uuidValidate = (uuid) => {
     const UUID_REGEX = /^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$/;
     if (uuid === null || uuid === undefined) {
         throw new Error("UUID không hợp lệ");
@@ -37,7 +35,7 @@ const uuidValidate = (uuid) =>{
     return uuid;
 }
 
-const urlValidate = (url) =>{
+const urlValidate = (url) => {
     const URL_REGEX = /^(http:\/\/www.|https:\/\/www.|http:\/\/|https:\/\/)?[a-z0-9]+([-.]{1}[a-z0-9]+).[a-z]{2,5}(:[0-9]{1,5})?(\/.)?$/;
     if (url === null || url === undefined) {
         throw new Error("Url không hợp lệ");
@@ -48,7 +46,7 @@ const urlValidate = (url) =>{
     return url;
 }
 
-const emailValidate = (email) =>{
+const emailValidate = (email) => {
     const EMAIL_REGEX = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
     if (email === null || email === undefined) {
         throw new Error("Email không hợp lệ");
@@ -59,7 +57,7 @@ const emailValidate = (email) =>{
     return email;
 }
 
-const phoneValidate = (phone) =>{
+const phoneValidate = (phone) => {
     const PHONE_REGEX = /(84|0[3|5|7|8|9])+([0-9]{8})/;
     if (phone === null || phone === undefined) {
         throw new Error("Số điện thoại không hợp lệ");
@@ -70,7 +68,7 @@ const phoneValidate = (phone) =>{
     return phone;
 }
 
-const integerValidate = (number) =>{
+const integerValidate = (number) => {
     const INTEGER_REGEX = /^-?\d+$/;
     if (number === null || number === undefined) {
         throw new Error("Số nguyên không hợp lệ");
@@ -81,4 +79,15 @@ const integerValidate = (number) =>{
     return parseInt(number);
 }
 
-module.exports = {usernameValidate, passwordValidate, uuidValidate, urlValidate, emailValidate, phoneValidate, integerValidate}
+const fullnameValidate = (fullname) => {
+    const FULLNAME_REGEX = /\b[A-Z][a-z]*\b/;
+    const names = fullname.trim().split(/\s+/); // Tách chuỗi thành mảng các từ, loại bỏ khoảng trắng thừa
+    for (let i = 0; i < names.length; i++) {
+        if (!FULLNAME_REGEX.test(names[i])) {
+            throw new Error("Tên không hợp lệ");
+        }
+    }
+    return fullname;
+}
+
+module.exports = { usernameValidate, passwordValidate, uuidValidate, urlValidate, emailValidate, phoneValidate, integerValidate, fullnameValidate }
