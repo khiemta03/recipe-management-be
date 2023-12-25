@@ -46,10 +46,13 @@ const addCommentController = async (req, res) => {
         userId = boolean.uuidValidate(userId);
         // reply to comment id
         let replyTo = req.body.replyTo; 
-        replyTo = boolean.uuidValidate(replyTo);
+        //replyTo = boolean.uuidValidate(replyTo);
         //insert into databse
         await addComment(recipeId, userId, content, replyTo);
-        res.json('add comment successfully');
+        res.json({
+            status: 200,
+            message: 'add comment successfully'
+        });
 
     }
     catch(err) {
@@ -74,7 +77,10 @@ const removeCommentController = async (req, res) => {
         
         //delete from comments
         await removeComment(commentId, userId);
-        res.json('remove comment successfully');
+        res.json({
+            status: 200,
+            message: 'remove comment successfully'
+        });
 
     }
     catch(err) {
@@ -100,7 +106,10 @@ const updateCommentController = async (req, res) => {
         
         //delete from comments
         await updateComment(commentId, userId, newContent);
-        res.json('update successfully');
+        res.json({
+            status: 200,
+            message: 'update successfully'
+        });
 
     }
     catch(err) {

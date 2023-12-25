@@ -164,7 +164,14 @@ const removeComment = async (commentId, userId) => {
 
     //delete from table comments
     try {
-        await postgres.query(queryString, values);
+        try {
+            await postgres.query(queryString, values);
+        }
+        catch(err) {
+            //delete reply comment
+            await postgres.query(`delete from comments where replyto = $1`, [commentId]);
+            await postgres.query(queryString, values);
+        }
     }
     catch(err) {
         throw new Error('Internal Server Error');
