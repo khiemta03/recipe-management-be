@@ -1,4 +1,5 @@
-const { Rating, getNumberRatingOfRecipe, getUserRatingofRecipe, updateRating, getRatingofUser } = require('../queries/rating-queries.js');
+const { Rating, updateRating} = require('../queries/rating-queries.js');
+const { getNumberRatingOfRecipe, getUserRatingofRecipe, getRatingofUser } = require('../queries/index.js');
 const boolean = require('../utils/booleanUtils');
 
 //post
@@ -9,7 +10,7 @@ const ratingController = async (req, res) => {
     try {
         userId = boolean.uuidValidate(userId);
         recipeId = boolean.uuidValidate(recipeId);
-        rate = boolean.integerValidate(rate);
+        rate = boolean.numberValidate(rate);
         await Rating(userId, recipeId, rate);
         res.json({
             status: 200,
@@ -61,7 +62,7 @@ const updateRatingController = async (req, res) => {
             status: 200,
             message: 'Đánh giá thành công'
         })
-    } catch (error) {
+    } catch (err) {
         res.status(500).json({
             status: 500,
             message: err.message

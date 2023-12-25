@@ -15,7 +15,7 @@ const getNumberRatingOfRecipe = async (RecipeId) => {
     const values = [RecipeId];
     try {
         const result = await postgres.query(queryString, values);
-        return result;
+        return result.rows[0].count;
     } catch (err) {
         throw new Error('Lỗi server');
     }
@@ -53,7 +53,7 @@ const getRatingofUser = async (UserId, RecipeId) =>{
     const values = [UserId, RecipeId] ;
     try {
         const result = await postgres.query(queryString, values);
-        return result;
+        return result.rows[0].rating;
     } catch (error) {
         throw new Error('Lỗi server');
     }

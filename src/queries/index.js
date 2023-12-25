@@ -6,6 +6,7 @@ const {getFavouriteRecipes} = require('./favourite-queries')
 const {getToken, addToken, deleteToken} = require('./token-queries')
 const {getComments, addComment, removeComment, updateComment} = require('./comment-queries')
 const {getAllRoles} = require('./role-queries')
+const { getNumberRatingOfRecipe, getUserRatingofRecipe, getRatingofUser } = require('../queries/rating-queries.js');
 
 module.exports = {
     getUserProfile,
@@ -25,5 +26,8 @@ module.exports = {
     addComment,
     removeComment,
     updateComment,
-    getAllRoles
+    getAllRoles,
+    getNumberRatingOfRecipe, 
+    getUserRatingofRecipe, 
+    getRatingofUser 
 }

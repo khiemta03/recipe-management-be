@@ -68,15 +68,15 @@ const phoneValidate = (phone) => {
     return phone;
 }
 
-const integerValidate = (number) => {
-    const INTEGER_REGEX = /^-?\d+$/;
+const numberValidate = (number) => {
+    const NUMBER_REGEX = /^\d+(\.\d+)?$/;
     if (number === null || number === undefined) {
         throw new Error("Số nguyên không hợp lệ");
     }
-    if (!INTEGER_REGEX.test(number)) {
+    if (!NUMBER_REGEX.test(number)) {
         throw new Error("Số nguyên không hợp lệ");
     }
-    return parseInt(number);
+    return Number(number);
 }
 
 const isUserStatusValid = (status) => {
@@ -94,4 +94,4 @@ const fullnameValidate = (fullname) => {
     return fullname;
 }
 
-module.exports = { usernameValidate, passwordValidate, uuidValidate, urlValidate, emailValidate, phoneValidate, integerValidate, fullnameValidate, isUserStatusValid }
+module.exports = { usernameValidate, passwordValidate, uuidValidate, urlValidate, emailValidate, phoneValidate, numberValidate, fullnameValidate, isUserStatusValid }
