@@ -1,6 +1,9 @@
 const { getUserProfile, addNewUser, getRoleByRoleId, addToken, deleteToken } = require('../queries/index')
 const boolean = require('../utils/booleanUtils');
 
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 
 // ? Utils
 const objectUtils = require('../utils/objectUtils')
@@ -17,9 +20,9 @@ const loginController = async (req, res, next) => {
 
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username
-            throw new Error('Tên đăng nhập không hợp lệ')
-        } else if (userData.password !== password) {
-            throw new Error('Mật khẩu không chính xác')
+            throw new Error('Tên đăng nhập hoặc mật khẩu không chính xác')
+        } else if (!bcrypt.compareSync(password, userData.password)) {
+            throw new Error('Tên đăng nhập hoặc mật khẩu không chính xác')
         }
         else {
             // Database has this username, so we send a success message with a token
@@ -63,6 +66,10 @@ const registerController = async (req, res, next) => {
 
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username, so we add it
+
+            //hash password
+            password = bcrypt.hashSync(password, saltRounds);
+
             await addNewUser(username, password, name, email);
             const token = tokenUtils.generateNewToken({
                 username: username

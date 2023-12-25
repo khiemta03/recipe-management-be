@@ -4,6 +4,10 @@ const { uploadFileToGCP } = require('../helpers/gcp')
 const { isEmpty } = require('../utils/objectUtils')
 const fs = require('fs').promises
 const boolean = require('../utils/booleanUtils');
+
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 const getAllUsersController = async (req, res) => {
     let role = req.query['role'] || 'all'
     role = parseInt(role)
@@ -65,6 +69,9 @@ const addNewUserController = async (req, res) => {
         name = boolean.fullnameValidate(name);
         const userData = await getUserProfile({ username: username })
         if (isEmpty(userData)) {
+            //hash password
+            password = bcrypt.hashSync(password, saltRounds);
+
             await addNewUser(username, password, name, email, role)
             res.json({
                 status: 200,
@@ -114,7 +121,12 @@ const updateUserProfileController = async (req, res) => {
             req.folderName = 'UserAvatar'
             avatar = await uploadFileToGCP(req)
         }
-        const password = req.body['password'] || null
+        let password = req.body['password'] || null
+        //hash password
+        if(password) {
+            password = bcrypt.hashSync(password, saltRounds);
+        }
+        
         const name = req.body['name'] || null
         const email = req.body['email'] || null
         await updateUserProfile(userId, password, name, email, avatar)
