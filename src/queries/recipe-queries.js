@@ -3,7 +3,7 @@ const postgres = require('../databases/postgreSQL')
 const getRecipes = async (page, per_page, sort_by, category, status = 'Approved', keyword) => {
 
     let queryString = `select RECIPES.*, CATEGORIES.Name AS category , AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews\nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
-                        \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId\nwhere 1 = 1`
+                        \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId\nwhere 1 = 1 `
     let values = [(page - 1) * per_page, per_page, status]
     if (category !== 'all') {
         queryString += '\nand CATEGORIES.CategoryId = $4'
@@ -37,7 +37,7 @@ const getRecipes = async (page, per_page, sort_by, category, status = 'Approved'
 const getRecipe = async (recipeId) => {
     const queryString = `select RECIPES.*, CATEGORIES.Name AS category, AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews
                         \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId where RECIPES.RecipeId = $1
-                        \ngroup by RECIPES.RecipeId, CATEGORIES.Name`
+                        \ngroup by RECIPES.RecipeId, CATEGORIES.Name `
     const values = [recipeId]
     try {
         const recipeData = await postgres.query(queryString, values)
@@ -79,7 +79,7 @@ const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword) =
 
 const getRecipesOfUser = async (userId, page, per_page, sort_by, category, status, keyword) => {
     let queryString = `select RECIPES.*, CATEGORIES.Name AS category , AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews\nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
-    \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId\nwhere RECIPES.Author = $3`
+    \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId\nwhere RECIPES.Author = $3 `
     let values = [(page - 1) * per_page, per_page, userId]
     let setClauses = []
     if (category !== 'all') {
@@ -93,8 +93,12 @@ const getRecipesOfUser = async (userId, page, per_page, sort_by, category, statu
     }
 
     if (status) {
-        setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 4))
-        values.push(status)
+        if (status !== 'Deleted') {
+            setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 4))
+            values.push(status)
+        }
+    } else {
+        setClauses.push(" and RECIPES.Status != 'Delete'")
     }
 
     queryString += setClauses.join(' ')
@@ -114,7 +118,7 @@ const getRecipesOfUser = async (userId, page, per_page, sort_by, category, statu
 }
 
 const getUserRecipeCount = async (userId, category, status, keyword) => {
-    let queryString = `select count(*)\nfrom RECIPES, CATEGORIES\nwhere RECIPES.Category = CATEGORIES.CategoryId and RECIPES.Author = $1`
+    let queryString = `select count(*)\nfrom RECIPES, CATEGORIES\nwhere RECIPES.Category = CATEGORIES.CategoryId and RECIPES.Author = $1 `
     let values = [userId]
     let setClauses = []
     if (category !== 'all') {
@@ -128,8 +132,12 @@ const getUserRecipeCount = async (userId, category, status, keyword) => {
     }
 
     if (status) {
-        setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 2))
-        values.push(status)
+        if (status !== 'Deleted') {
+            setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 2))
+            values.push(status)
+        }
+    } else {
+        setClauses.push(" and RECIPES.Status != 'Delete'")
     }
 
     queryString += setClauses.join(' ')
@@ -138,7 +146,10 @@ const getUserRecipeCount = async (userId, category, status, keyword) => {
         const formattedData = parseInt(recipeData.rows[0].count)
         return formattedData
     } catch (err) {
-        throw new Error('Lỗi server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -220,6 +231,59 @@ const changeRecipeStatus = async ({ recipeId, newStatus }) => {
     }
 }
 
+
+const getRecipeCountStatistics = async ({ year, category, status, userId }) => {
+    let queryString = `WITH RECURSIVE months_series AS (
+        SELECT 1 AS month
+        UNION
+        SELECT month + 1
+        FROM months_series
+        WHERE month < 12
+        )
+        SELECT ms.month AS month,
+            CAST(COALESCE(COUNT(r.recipeid), 0) AS INTEGER) AS num_recipes
+        FROM months_series ms
+        LEFT JOIN
+            recipes r ON EXTRACT(MONTH FROM r.datesubmit) = ms.month AND EXTRACT(YEAR FROM r.datesubmit) = $1
+
+      `
+    let values = [year]
+    let setClauses = []
+    if (category) {
+        setClauses.push('and r.Category = $' + (setClauses.length + 2))
+        values.push(category)
+    }
+
+    if (status) {
+        setClauses.push(' and r.Status = $' + (setClauses.length + 2))
+        values.push(status)
+    }
+
+    if (userId) {
+        setClauses.push(' and r.author = $' + (setClauses.length + 2))
+        values.push(userId)
+    }
+
+    queryString += setClauses.join(' ')
+
+    queryString += `
+    GROUP BY
+        ms.month
+    ORDER BY
+        ms.month;`
+
+    try {
+        const countList = await postgres.query(queryString, values)
+        const formattedData = countList.rowCount > 0 ? countList.rows : []
+        return formattedData
+    } catch (err) {
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
+    }
+}
+
 module.exports = {
     getRecipes,
     getRecipe,
@@ -228,5 +292,6 @@ module.exports = {
     getUserRecipeCount,
     addNewRecipe,
     updateRecipe,
-    changeRecipeStatus
+    changeRecipeStatus,
+    getRecipeCountStatistics
 }

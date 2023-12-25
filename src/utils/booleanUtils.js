@@ -79,6 +79,10 @@ const integerValidate = (number) => {
     return parseInt(number);
 }
 
+const isUserStatusValid = (status) => {
+    return (status === 'Active' || status === 'Blocked')
+}
+
 const fullnameValidate = (fullname) => {
     const FULLNAME_REGEX = /\b[A-Z][a-z]*\b/;
     const names = fullname.trim().split(/\s+/); // Tách chuỗi thành mảng các từ, loại bỏ khoảng trắng thừa
@@ -90,4 +94,4 @@ const fullnameValidate = (fullname) => {
     return fullname;
 }
 
-module.exports = { usernameValidate, passwordValidate, uuidValidate, urlValidate, emailValidate, phoneValidate, integerValidate, fullnameValidate }
+module.exports = { usernameValidate, passwordValidate, uuidValidate, urlValidate, emailValidate, phoneValidate, integerValidate, fullnameValidate, isUserStatusValid }

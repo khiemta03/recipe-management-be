@@ -1,18 +1,35 @@
-const { getUserProfile, getAllUsers, addNewUser, deleteUserProfile, updateUserProfile } = require('../queries/user-queries')
-const { getRoleByRoleId } = require('../queries/role-queries')
+const { getUserProfile, getAllUsers, addNewUser, deleteUserProfile, updateUserProfile, getNumOfUsers, getUserCountStatistics, updateUserStatus, updateUserRole } = require('../queries/user-queries')
+const { getRoleByRoleId, getAllRoles } = require('../queries/role-queries')
 const { uploadFileToGCP } = require('../helpers/gcp')
 const { isEmpty } = require('../utils/objectUtils')
+
+const booleanUtils = require('../utils/booleanUtils')
 const fs = require('fs').promises
 const boolean = require('../utils/booleanUtils');
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
+
 const getAllUsersController = async (req, res) => {
-    let role = req.query['role'] || 'all'
-    role = parseInt(role)
     try {
-        const usersData = await getAllUsers(role)
+        let role = req.query['role']
+        role = role ? parseInt(role) : null
+
+        let page = req.query['page']
+        page = page ? parseInt(page) : 1
+
+        const keyword = req.query['keyword'] || null
+
+        const status = req.query['status'] || null
+
+        const userCount = await getNumOfUsers({ role, keyword, status })
+        let perPage = req.query['per_page'] || userCount
+        perPage = parseInt(perPage)
+
+        const sortBy = req.query['sort_by'] || null
+
+        const usersData = await getAllUsers({ page, per_page: perPage, role, status, keyword, sort_by: sortBy })
         for (const user of usersData) {
             const roleId = user.role
             delete user.role
@@ -22,12 +39,48 @@ const getAllUsersController = async (req, res) => {
 
         res.json({
             status: 200,
+            page: page,
+            per_page: perPage,
+            total_page: userCount % perPage === 0 ? Math.floor(userCount / perPage) : Math.floor(userCount / perPage) + 1,
+            user_status: status,
+            keyword: keyword,
+            sort_by: sortBy,
+            role: role,
             data: usersData
         })
     }
     catch (err) {
-        res.status(500).json({
-            status: 500,
+        res.status(err.status).json({
+            status: err.status,
+            message: err.message
+        })
+    }
+}
+
+const getUserCountController = async (req, res) => {
+    try {
+        let role = req.query['role']
+        role = role ? parseInt(role) : null
+
+        const keyword = req.query['keyword'] || null
+
+        const status = req.query['status'] || null
+
+        const userCount = await getNumOfUsers({ role, keyword, status })
+
+        res.json({
+            status: 200,
+            user_status: status,
+            keyword: keyword,
+            role: role,
+            data: {
+                count: userCount
+            }
+        })
+    }
+    catch (err) {
+        res.status(err.status).json({
+            status: err.status,
             message: err.message
         })
     }
@@ -38,7 +91,7 @@ const getUserProfileController = async (req, res) => {
     try {
         id = boolean.uuidValidate(id);
         const userResData = await getUserProfile({ userId: id })
-        const { username, password, ...userData } = userResData
+        const { password, ...userData } = userResData
         const roleId = userData.role
         delete userData.role
         const roleName = await getRoleByRoleId(roleId)
@@ -136,7 +189,6 @@ const updateUserProfileController = async (req, res) => {
         })
     }
     catch (err) {
-        console.log(err)
         res.status(500).json({
             status: 500,
             message: err.message
@@ -145,6 +197,120 @@ const updateUserProfileController = async (req, res) => {
 }
 
 
+const getUserStatisticsController = async (req, res) => {
+    let year = req.query['year'] || new Date().getFullYear()
+    year = parseInt(year)
+    let role = req.query['role']
+    role = role ? parseInt(role) : null
+    const status = req.query['status'] || null
+
+    try {
+        const userCountList = await getUserCountStatistics({ year, role, status })
+
+        return res.json({
+            status: 200,
+            year: year,
+            user_status: status,
+            role: role,
+            data: userCountList
+        })
+    }
+    catch (err) {
+        return res.status(err.status).json({
+            status: err.status,
+            message: err.message
+        })
+    }
+}
+
+const updateUserStatusController = async (req, res) => {
+    const newStatus = req.body['status']
+    const userId = req.params['id']
+
+    try {
+        const userData = await getUserProfile({ userId })
+        if (isEmpty(userData)) {
+            throw {
+                status: 400,
+                message: 'Người dùng này không tồn tại'
+            }
+        }
+
+        if (userData.role === 3) {
+            throw {
+                status: 400,
+                message: 'Không thể thay đổi status của super admin'
+            }
+        }
+
+
+        if (!booleanUtils.isUserStatusValid(newStatus)) {
+            throw {
+                status: 400,
+                message: 'Trạng thái mới không hợp lệ'
+            }
+        }
+
+        await updateUserStatus({ userId, newStatus })
+
+        return res.json({
+            status: 200,
+            message: 'Thay đổi trạng thái thành công'
+        })
+    }
+    catch (err) {
+        return res.status(err.status).json({
+            status: err.status,
+            message: err.message
+        })
+    }
+}
+
+const updateUserRoleController = async (req, res) => {
+    let newRole = req.body['role']
+    newRole = newRole ? parseInt(newRole) : null
+    const userId = req.params['id']
+
+    try {
+        const userData = await getUserProfile({ userId })
+        if (isEmpty(userData)) {
+            throw {
+                status: 400,
+                message: 'Người dùng này không tồn tại'
+            }
+        }
+
+        if (userData.role === 3) {
+            throw {
+                status: 400,
+                message: 'Không thể thay đổi role của super admin'
+            }
+        }
+
+
+        const roles = await getAllRoles()
+        const isRoleValid = roles.some(role => role.roleid === newRole)
+        if (!isRoleValid || newRole === 3) {
+            throw {
+                status: 400,
+                message: 'Role mới không hợp lệ'
+            }
+        }
+
+        await updateUserRole({ userId, newRole })
+
+        return res.json({
+            status: 200,
+            message: 'Thay đổi role thành công'
+        })
+    }
+    catch (err) {
+        return res.status(err.status).json({
+            status: err.status,
+            message: err.message
+        })
+    }
+}
 
 
 
@@ -154,4 +320,8 @@ module.exports = {
     addNewUserController,
     deleteUserController,
     updateUserProfileController,
+    getUserCountController,
+    getUserStatisticsController,
+    updateUserStatusController,
+    updateUserRoleController
 }
