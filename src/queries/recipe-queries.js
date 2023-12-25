@@ -93,8 +93,12 @@ const getRecipesOfUser = async (userId, page, per_page, sort_by, category, statu
     }
 
     if (status) {
-        setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 4))
-        values.push(status)
+        if (status !== 'Deleted') {
+            setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 4))
+            values.push(status)
+        }
+    } else {
+        setClauses.push(" and RECIPES.Status != 'Delete'")
     }
 
     queryString += setClauses.join(' ')
@@ -128,8 +132,12 @@ const getUserRecipeCount = async (userId, category, status, keyword) => {
     }
 
     if (status) {
-        setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 2))
-        values.push(status)
+        if (status !== 'Deleted') {
+            setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 2))
+            values.push(status)
+        }
+    } else {
+        setClauses.push(" and RECIPES.Status != 'Delete'")
     }
 
     queryString += setClauses.join(' ')

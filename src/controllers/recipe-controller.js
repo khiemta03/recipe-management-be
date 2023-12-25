@@ -282,7 +282,7 @@ const updateRecipeController = async (req, res) => {
         })
         res.json({
             status: 200,
-            message: 'Thêm công thức thành công'
+            message: 'Cập nhật công thức thành công'
         })
     }
     catch (err) {
@@ -331,7 +331,8 @@ const changeRecipeStatusController = async (req, res) => {
 
 
 const getRecipeStatisticsOfAdmin = async (req, res) => {
-    const year = req.query['year'] || new Date().getFullYear()
+    let year = req.query['year'] || new Date().getFullYear()
+    year = parseInt(year)
     const category = req.query['category'] || null
     const status = req.query['status'] || null
 
@@ -358,7 +359,8 @@ const getRecipeStatisticsOfAdmin = async (req, res) => {
 
 
 const getRecipeStatisticsOfUser = async (req, res) => {
-    const year = req.query['year'] || new Date().getFullYear()
+    let year = req.query['year'] || new Date().getFullYear()
+    year = parseInt(year)
     const userId = req.user.userId
 
     try {
