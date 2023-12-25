@@ -4,7 +4,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
 
-const { authRoutes, recipeCategoryRoutes, recipeRoutes, userRoutes, roleRoutes, usersRoutes, commentRoutes } = require('./src/routes/index')
+const { authRoutes, recipeCategoryRoutes, recipeRoutes, userRoutes, roleRoutes, usersRoutes, commentRoutes, ratingRoutes } = require('./src/routes/index')
 const cors = require('cors')
 
 // parse application/x-www-form-urlencoded
@@ -26,7 +26,7 @@ app.use('/api/v1/recipe-categories', recipeCategoryRoutes)
 app.use('/api/v1/recipes', recipeRoutes)
 
 app.use('/api/v1/comments', commentRoutes);
-
+app.use('/api/v1/rating', ratingRoutes)
 app.use('/api/v1/user', userRoutes)
 app.use('/api/v1/users', usersRoutes)
 app.use('/api/v1/roles', roleRoutes)

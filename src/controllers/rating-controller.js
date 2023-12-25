@@ -4,8 +4,8 @@ const boolean = require('../utils/booleanUtils');
 //post
 const ratingController = async (req, res) => {
     let userId = req.user.userId;
-    let recipeId = req.body['recipe'];
-    let rate = req.body['rating'];
+    let recipeId = req.params['recipeId'];
+    let rate = req.body.rating;
     try {
         userId = boolean.uuidValidate(userId);
         recipeId = boolean.uuidValidate(recipeId);
@@ -26,7 +26,7 @@ const ratingController = async (req, res) => {
 //get
 const getRatingOfRecipeController = async (req, res) => {
     let userId = req.user.userId;
-    let recipeId = req.query['recipe'];
+    let recipeId = req.params['recipeId'];
     try {
         userId = boolean.uuidValidate(userId);
         recipeId = boolean.uuidValidate(recipeId);
@@ -50,7 +50,7 @@ const getRatingOfRecipeController = async (req, res) => {
 //put
 const updateRatingController = async (req, res) => {
     let userId = req.user.userId;
-    let recipeId = req.params['id'];
+    let recipeId = req.params['recipeId'];
     let newRate = req.body['newrate'];
     try {
         userId = boolean.uuidValidate(userId);

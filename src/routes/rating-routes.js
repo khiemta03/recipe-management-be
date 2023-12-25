@@ -3,10 +3,10 @@ const router = express.Router({ mergeParams: true })
 const {ratingController, getRatingOfRecipeController, updateRatingController} = require('../controllers/rating-controller')
 
 router
-    .get('/', getRatingOfRecipeController)
+    .get('/:recipeId', getRatingOfRecipeController)
 
-    .post('/', ratingController)
+    .post('/:recipeId', ratingController)
 
-    .put('/:id', updateRatingController)
+    .put('/:recipeId', updateRatingController)
 
 module.exports = router
