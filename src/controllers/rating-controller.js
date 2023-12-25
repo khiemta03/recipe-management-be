@@ -56,7 +56,7 @@ const updateRatingController = async (req, res) => {
     try {
         userId = boolean.uuidValidate(userId);
         recipeId = boolean.uuidValidate(recipeId);
-        newRate = boolean.integerValidate(newRate);
+        newRate = boolean.numberValidate(newRate);
         await updateRating(userId, recipeId, newRate);
         res.json({
             status: 200,
