@@ -5,6 +5,7 @@ const userRoutes = require('./user-routes')
 const commentRoutes = require('./comment-routes')
 const roleRoutes = require('./role-routes')
 const usersRoutes = require('./users-routes')
+const ratingRoutes = require('./rating-routes')
 
 module.exports = {
     authRoutes,
@@ -13,5 +14,6 @@ module.exports = {
     userRoutes,
     commentRoutes,
     usersRoutes,
-    roleRoutes
+    roleRoutes,
+    ratingRoutes
 }

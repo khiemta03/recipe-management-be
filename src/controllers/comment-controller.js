@@ -1,5 +1,5 @@
 const { getComments, addComment, removeComment, updateComment } = require('../queries/index')
-
+const boolean = require('../utils/booleanUtils');
 
 
 //get comments
@@ -11,8 +11,8 @@ const getCommentsController = async (req, res) => {
         per_page = parseInt(per_page);
         
         const sort_by = req.query['sort_by'] || 'newest';
-        const recipeId = req.params['recipeId'];
-
+        let recipeId = req.params['recipeId'];
+        recipeId = boolean.uuidValidate(recipeId);
         //get comments data
         const commentsData = await getComments(recipeId, page, per_page, sort_by);
 
@@ -39,13 +39,14 @@ const getCommentsController = async (req, res) => {
 const addCommentController = async (req, res) => {
     try {
         //get information
-        const recipeId = req.params['recipeId'];
+        let recipeId = req.params['recipeId'];
+        recipeId = boolean.uuidValidate(recipeId);
         const content = req.body.content;
-        const userId = req.user.userId;
-
+        let userId = req.user.userId;
+        userId = boolean.uuidValidate(userId);
         // reply to comment id
-        const replyTo = req.body.replyTo; 
-
+        let replyTo = req.body.replyTo; 
+        replyTo = boolean.uuidValidate(replyTo);
         //insert into databse
         await addComment(recipeId, userId, content, replyTo);
         res.json('add comment successfully');
@@ -65,9 +66,11 @@ const addCommentController = async (req, res) => {
 const removeCommentController = async (req, res) => {
     try {
         //get comment id
-        const commentId = req.params.commentId;
+        let commentId = req.params.commentId;
+        commentId = boolean.uuidValidate(commentId);
         //get user id
-        const userId = req.user.userId;
+        let userId = req.user.userId;
+        userId = boolean.uuidValidate(userId);
         
         //delete from comments
         await removeComment(commentId, userId);
@@ -87,9 +90,11 @@ const removeCommentController = async (req, res) => {
 const updateCommentController = async (req, res) => {
     try {
         //get comment id
-        const commentId = req.params.commentId;
+        let commentId = req.params.commentId;
+        commentId = boolean.uuidValidate(commentId);
         //get user id
-        const userId = req.user.userId;
+        let userId = req.user.userId;
+        userId = boolean.uuidValidate(userId);
         //get content
         const newContent = req.body.newContent;
         

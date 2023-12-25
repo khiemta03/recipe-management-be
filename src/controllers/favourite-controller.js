@@ -1,11 +1,13 @@
 const { getDetailFavouriteRecipes, getNumOfFavouriteRecipes, isInFavourites, addNewFavouriteRecipe, removeFavouriteRecipe } = require('../queries/favourite-queries')
 const { getRecipe } = require('../queries/recipe-queries')
 const { isEmpty } = require('../utils/objectUtils')
+const boolean = require('../utils/booleanUtils');
+
 
 const getFavouriteRecipesController = async (req, res) => {
-    const userId = req.user.userId
+    let userId = req.user.userId;
     try {
-
+        userId = boolean.uuidValidate(userId);
         const category = req.query['category'] || 'all'
         let page = req.query['page'] || 1
         page = parseInt(page)
@@ -37,10 +39,11 @@ const getFavouriteRecipesController = async (req, res) => {
 }
 
 const addNewFavouriteRecipeController = async (req, res) => {
-    const userId = req.user.userId
-    const recipeId = req.body['recipe']
+    let userId = req.user.userId
+    let recipeId = req.body['recipe']
     try {
-
+        userId = boolean.uuidValidate(userId);
+        recipeId = boolean.uuidValidate(recipeId);
         const recipeData = await getRecipe(recipeId)
         if (isEmpty(recipeData)) {
             throw new Error('Công thức này không tồn tại')
@@ -66,10 +69,11 @@ const addNewFavouriteRecipeController = async (req, res) => {
 }
 
 const removeRecipeFromFavouritesController = async (req, res) => {
-    const userId = req.user.userId
-    const recipeId = req.params['id']
+    let userId = req.user.userId
+    let recipeId = req.params['id']
     try {
-
+        userId = boolean.uuidValidate(userId);
+        recipeId = boolean.uuidValidate(recipeId);
         const recipeData = await getRecipe(recipeId)
         if (isEmpty(recipeData)) {
             throw new Error('Công thức này không tồn tại')

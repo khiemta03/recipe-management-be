@@ -1,4 +1,8 @@
 const { getUserProfile, addNewUser, getRoleByRoleId, addToken, deleteToken } = require('../queries/index')
+const boolean = require('../utils/booleanUtils');
+
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 
 // ? Utils
@@ -7,17 +11,18 @@ const tokenUtils = require('../utils/tokenUtils')
 
 // login handler
 const loginController = async (req, res, next) => {
-    const username = req.body.username
-    const password = req.body.password
-
+    let username = req.body.username;
+    let password = req.body.password;
     try {
+        username = boolean.usernameValidate(username);
+        password = boolean.passwordValidate(password);
         const userData = await getUserProfile({ username: username })
 
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username
-            throw new Error('Tên đăng nhập không hợp lệ')
-        } else if (userData.password !== password) {
-            throw new Error('Mật khẩu không chính xác')
+            throw new Error('Tên đăng nhập hoặc mật khẩu không chính xác')
+        } else if (!bcrypt.compareSync(password, userData.password)) {
+            throw new Error('Tên đăng nhập hoặc mật khẩu không chính xác')
         }
         else {
             // Database has this username, so we send a success message with a token
@@ -48,17 +53,23 @@ const loginController = async (req, res, next) => {
 
 // register
 const registerController = async (req, res, next) => {
-    const username = req.body.username;
-    const password = req.body.password;
-    const email = req.body.email;
-    const name = req.body.name;
-
-
+    let username = req.body.username;
+    let password = req.body.password;
+    let email = req.body.email;
+    let name = req.body.name;
     try {
+        username = boolean.usernameValidate(username);
+        password = boolean.passwordValidate(password);
+        email = boolean.emailValidate(email);
+        name =boolean.fullnameValidate(name);
         const userData = await getUserProfile({ username: username })
 
         if (objectUtils.isEmpty(userData)) {
             // Database dont have this username, so we add it
+
+            //hash password
+            password = bcrypt.hashSync(password, saltRounds);
+
             await addNewUser(username, password, name, email);
             const token = tokenUtils.generateNewToken({
                 username: username

@@ -1,5 +1,3 @@
-
-
 const usernameValidate = (username) => {
     const USER_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]{3,23}$/;
     if (username === null || username === undefined) {
@@ -85,4 +83,15 @@ const isUserStatusValid = (status) => {
     return (status === 'Active' || status === 'Blocked')
 }
 
-module.exports = { usernameValidate, passwordValidate, uuidValidate, urlValidate, emailValidate, phoneValidate, integerValidate, isUserStatusValid }
+const fullnameValidate = (fullname) => {
+    const FULLNAME_REGEX = /\b[A-Z][a-z]*\b/;
+    const names = fullname.trim().split(/\s+/); // Tách chuỗi thành mảng các từ, loại bỏ khoảng trắng thừa
+    for (let i = 0; i < names.length; i++) {
+        if (!FULLNAME_REGEX.test(names[i])) {
+            throw new Error("Tên không hợp lệ");
+        }
+    }
+    return fullname;
+}
+
+module.exports = { usernameValidate, passwordValidate, uuidValidate, urlValidate, emailValidate, phoneValidate, integerValidate, fullnameValidate, isUserStatusValid }
