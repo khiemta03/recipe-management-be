@@ -3,7 +3,7 @@ const { getAllRoles } = require('../queries/index')
 
 const getRolesController = async (req, res) => {
     try {
-        const roleQueryData = await getAllRoles()
+        const roleData = await getAllRoles()
         res.json({
             status: 200,
             data: roleData
