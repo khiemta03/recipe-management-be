@@ -8,7 +8,7 @@ const { getAllUsersController, getUserProfileController, addNewUserController,
     deleteUserController, updateUserProfileController } = require('./user-controller')
 const { getRolesController } = require('../controllers/role-controller')
 const { getFavouriteRecipesController, addNewFavouriteRecipeController } = require('./favourite-controller')
-const { ratingController, getRatingOfRecipeController, updateRatingController } =require('./rating-controller')
+const { ratingController, getRatingOfRecipeController} =require('./rating-controller')
 module.exports = {
     loginController,
     registerController,
@@ -34,6 +34,5 @@ module.exports = {
     addNewFavouriteRecipeController,
     getRecipesOfUserController,
     ratingController,
-    getRatingOfRecipeController, 
-    updateRatingController
+    getRatingOfRecipeController
 }
