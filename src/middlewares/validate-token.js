@@ -15,6 +15,9 @@ const validateToken = async (req, res, next) => {
             if (isEmpty(userData)) {
                 throw new Error('Token không hợp lệ')
             }
+            if (userData.status !== 'Active') {
+                throw new Error('Tài khoản này đã bị block')
+            }
             req.user = {
                 userId: userData.userid,
                 username: userData.username,

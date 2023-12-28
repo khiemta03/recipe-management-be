@@ -27,10 +27,16 @@ const passwordValidate = (password) => {
 const uuidValidate = (uuid) => {
     const UUID_REGEX = /^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$/;
     if (uuid === null || uuid === undefined) {
-        throw new Error("UUID không hợp lệ");
+        throw {
+            status: 400,
+            message: 'UUID không hợp lệ'
+        }
     }
     if (!UUID_REGEX.test(uuid)) {
-        throw new Error("UUID không hợp lệ");
+        throw {
+            status: 400,
+            message: 'UUID không hợp lệ'
+        }
     }
     return uuid;
 }

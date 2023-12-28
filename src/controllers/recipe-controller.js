@@ -4,6 +4,7 @@ const { isInFavourites } = require('../queries/favourite-queries')
 const { isEmpty } = require('../utils/objectUtils')
 const { uploadFileToGCP } = require('../helpers/gcp')
 const boolean = require('../utils/booleanUtils');
+const recipeUtils = require('../utils/recipeUtils')
 
 // get all approved recipes
 const getRecipesController = async (req, res) => {
@@ -53,9 +54,9 @@ const getRecipesController = async (req, res) => {
     }
 }
 
-const getPendingRecipesController = async (req, res) => {
+const getRecipesByAdminController = async (req, res) => {
     try {
-        const status = 'Pending'
+        const status = req.status
         const category = req.query['category'] || 'all'
         let page = req.query['page'] || 1
         page = parseInt(page)
@@ -84,35 +85,14 @@ const getPendingRecipesController = async (req, res) => {
     }
 }
 
-const getDeletedRecipesController = async (req, res) => {
-    try {
-        const status = 'Deleted'
-        const category = req.query['category'] || 'all'
-        let page = req.query['page'] || 1
-        page = parseInt(page)
-        const recipeCount = await getNumOfRecipes(category, status)
-        let perPage = req.query['per_page'] || recipeCount
-        perPage = parseInt(perPage)
-        const sortBy = req.query['sort_by'] || 'date'
-        const recipeData = await getRecipes(page, perPage, sortBy, category, status)
+const getPendingRecipesController = async (req, res) => {
+    req.status = 'Pending'
+    await getRecipesByAdminController(req, res)
+}
 
-        //Response
-        res.json({
-            status: 200,
-            page: page,
-            per_page: perPage,
-            total: recipeCount,
-            total_page: recipeCount % perPage === 0 ? Math.floor(recipeCount / perPage) : Math.floor(recipeCount / perPage) + 1,
-            sort_by: sortBy,
-            category: category,
-            data: recipeData
-        })
-    } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message
-        })
-    }
+const getRejectedRecipesController = async (req, res) => {
+    req.status = 'Rejected'
+    await getRecipesByAdminController(req, res)
 }
 
 // get specific recipe by id
@@ -122,27 +102,34 @@ const getRecipeController = async (req, res) => {
     try {
         id = boolean.uuidValidate(id);
         const recipeData = await getRecipe(id)
-        //check user
-        const userData = req.user
-        if (recipeData.status !== 'Approved') {
-            if (!isEmpty(userData)) {
-                const roleName = await getRoleByRoleId(userData.role)
-                if (roleName === 'User' && userData.userid !== recipeData.author) {
-                    throw new Error('Bạn không có quyền truy cập vào tài nguyên này')
-                }
-            }
-            else {
-                throw new Error('Bạn không có quyền truy cập vào tài nguyên này')
-            }
-        } else {
-            if (!isEmpty(userData)) {
-                const isFavourite = await isInFavourites(userData.userid, id)
-                recipeData.isfavourite = isFavourite
-            }
-            else {
-                recipeData.isfavourite = false
+        if (isEmpty(recipeData)) {
+            throw {
+                status: 400,
+                message: 'Công thức này không tồn tại'
             }
         }
+        //check user
+        const userData = req.user
+        if (isEmpty(userData)) {
+            if (recipeData.status !== 'Approved') {
+                throw {
+                    status: 403,
+                    message: 'Bạn không có quyền truy cập vào tài nguyên này'
+                }
+            }
+            recipeData.isfavourite = false
+        } else {
+            const roleName = await getRoleByRoleId(userData.role)
+            if (roleName === 'User' && userData.userid !== recipeData.author && recipeData.status !== 'Approved') {
+                throw {
+                    status: 403,
+                    message: 'Bạn không có quyền truy cập vào tài nguyên này'
+                }
+            }
+            const isFavourite = await isInFavourites(userData.userid, id)
+            recipeData.isfavourite = isFavourite
+        }
+
 
         res.json({
             status: 200,
@@ -150,8 +137,8 @@ const getRecipeController = async (req, res) => {
         })
     }
     catch (err) {
-        res.status(500).json({
-            status: 500,
+        res.status(err.status).json({
+            status: err.status,
             message: err.message
         })
     }
@@ -285,6 +272,9 @@ const updateRecipeController = async (req, res) => {
             category: category,
             avatar: avatar
         })
+
+        await changeRecipeStatus({ recipeId, newStatus: 'Pending', approvedBy: null })
+
         res.json({
             status: 200,
             message: 'Cập nhật công thức thành công'
@@ -313,15 +303,21 @@ const changeRecipeStatusController = async (req, res) => {
                 status: 400,
                 message: 'Công thức không tồn tại'
             }
-            // } else if () {
+        }
 
-        } else if (userRole === 1 && recipe.author !== userId) {
-            throw {
-                status: 403,
-                message: 'Bạn không có quyền thay đổi'
+        const currentStatus = recipe.status
+        let approvedBy = null
+        if (userRole === 1) {
+            recipeUtils.checkPermission(recipeUtils.checkChangingRecipeStatusByUser, currentStatus, newStatus)
+        }
+        else {
+            recipeUtils.checkPermission(recipeUtils.checkChangingRecipeStatusByAdmin, currentStatus, newStatus)
+            if (newStatus === 'Approved') {
+                approvedBy = userId
             }
         }
-        await changeRecipeStatus({ recipeId, newStatus })
+
+        await changeRecipeStatus({ recipeId, newStatus, approvedBy })
 
         return res.json({
             status: 200,
@@ -335,7 +331,6 @@ const changeRecipeStatusController = async (req, res) => {
         })
     }
 }
-
 
 const getRecipeStatisticsOfAdmin = async (req, res) => {
     let year = req.query['year'] || new Date().getFullYear()
@@ -417,12 +412,12 @@ module.exports = {
     getRecipesController,
     getRecipeController,
     getPendingRecipesController,
-    getDeletedRecipesController,
     getRecipesOfUserController,
     addNewRecipeController,
     updateRecipeController,
     changeRecipeStatusController,
     getRecipeStatisticsOfAdmin,
     getRecipeStatisticsOfUser,
-    getRecipeCountOfUser
+    getRecipeCountOfUser,
+    getRejectedRecipesController
 }
