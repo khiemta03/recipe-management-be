@@ -2,8 +2,11 @@ const postgres = require('../databases/postgreSQL')
 
 const getRecipes = async (page, per_page, sort_by, category, status = 'Approved', keyword) => {
 
-    let queryString = `select RECIPES.*, CATEGORIES.Name AS category , AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews\nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
-                        \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId\nwhere 1 = 1 `
+    let queryString = `select RECIPES.*, CATEGORIES.Name AS category , COALESCE(ROUND(AVG(rating.rating), 1), 0)::float AS averagerating, COUNT(rating.rating)::integer AS reviews
+                        \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
+                        \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId
+                        \nleft join USERS on RECIPES.Author = USERS.UserId
+                        \nwhere RECIPES.Status != 'Deleted' and USERS.Status = 'Active' `
     let values = [(page - 1) * per_page, per_page, status]
     if (category !== 'all') {
         queryString += '\nand CATEGORIES.CategoryId = $4'
@@ -20,7 +23,7 @@ const getRecipes = async (page, per_page, sort_by, category, status = 'Approved'
     }
 
     queryString += "\nand RECIPES.status = $3"
-    queryString += '\ngroup by RECIPES.RecipeId, CATEGORIES.Name'
+    queryString += '\ngroup by RECIPES.RecipeId, CATEGORIES.Name, USERS.UserId'
     queryString += sort_by === 'date' ? '\norder by DateSubmit Desc' : ''
     queryString += sort_by === 'rating' ? '\norder by AVG(rating.rating) Desc nulls last' : ''
     queryString += '\noffset $1\nlimit $2'
@@ -30,13 +33,17 @@ const getRecipes = async (page, per_page, sort_by, category, status = 'Approved'
         const formattedData = recipeData.rowCount > 0 ? recipeData.rows : []
         return formattedData
     } catch (err) {
+        console.log(err)
         throw new Error('Lỗi server')
     }
 }
 
 const getRecipe = async (recipeId) => {
-    const queryString = `select RECIPES.*, CATEGORIES.Name AS category, AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews
-                        \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId where RECIPES.RecipeId = $1
+    const queryString = `select RECIPES.*, CATEGORIES.Name AS category, COALESCE(ROUND(AVG(rating.rating), 1), 0)::float AS averagerating, COUNT(rating.rating)::integer AS reviews
+                        \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
+                        \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId
+                        \nleft join USERS on RECIPES.Author = USERS.UserId
+                        \nwhere RECIPES.RecipeId = $1 and RECIPES.Status != 'Deleted' and USERS.Status = 'Active'
                         \ngroup by RECIPES.RecipeId, CATEGORIES.Name `
     const values = [recipeId]
     try {
@@ -50,7 +57,10 @@ const getRecipe = async (recipeId) => {
 }
 
 const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword) => {
-    let queryString = `select count(*)\nfrom RECIPES, CATEGORIES\nwhere RECIPES.Category = CATEGORIES.CategoryId`
+    let queryString = `select count(*)
+                        \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
+                        \nleft join USERS on RECIPES.Author = USERS.UserId
+                        \nwhere RECIPES.Status != 'Deleted' and USERS.Status = 'Active'`
     let values = [status]
     if (category !== 'all') {
         queryString += '\nand CATEGORIES.CategoryId = $2'
@@ -78,8 +88,11 @@ const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword) =
 }
 
 const getRecipesOfUser = async (userId, page, per_page, sort_by, category, status, keyword) => {
-    let queryString = `select RECIPES.*, CATEGORIES.Name AS category , AVG(rating.rating) AS averagerating, COUNT(rating.rating)::integer AS reviews\nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
-    \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId\nwhere RECIPES.Author = $3 `
+    let queryString = `select RECIPES.*, CATEGORIES.Name AS category , COALESCE(ROUND(AVG(rating.rating), 1), 0)::float AS averagerating, COUNT(rating.rating)::integer AS reviews
+                        \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
+                        \nleft join RATING on RECIPES.RecipeId = RATING.RecipeId
+                        \nleft join USERS on RECIPES.Author = USERS.UserId
+                        \nwhere USERS.Status = 'Active' and RECIPES.Author = $3 and RECIPES.Status != 'Deleted' `
     let values = [(page - 1) * per_page, per_page, userId]
     let setClauses = []
     if (category !== 'all') {
@@ -93,10 +106,8 @@ const getRecipesOfUser = async (userId, page, per_page, sort_by, category, statu
     }
 
     if (status) {
-        if (status !== 'Deleted') {
-            setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 4))
-            values.push(status)
-        }
+        setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 4))
+        values.push(status)
     } else {
         setClauses.push(" and RECIPES.Status != 'Delete'")
     }
@@ -118,7 +129,10 @@ const getRecipesOfUser = async (userId, page, per_page, sort_by, category, statu
 }
 
 const getUserRecipeCount = async (userId, category, status, keyword) => {
-    let queryString = `select count(*)\nfrom RECIPES, CATEGORIES\nwhere RECIPES.Category = CATEGORIES.CategoryId and RECIPES.Author = $1 `
+    let queryString = `select count(*)
+                        \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId 
+                        \nleft join USERS on RECIPES.Author = USERS.UserId
+                        \nwhere USERS.Status = 'Active' and RECIPES.Author = $1 and RECIPES.Status != 'Deleted'`
     let values = [userId]
     let setClauses = []
     if (category !== 'all') {
@@ -132,10 +146,8 @@ const getUserRecipeCount = async (userId, category, status, keyword) => {
     }
 
     if (status) {
-        if (status !== 'Deleted') {
-            setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 2))
-            values.push(status)
-        }
+        setClauses.push(' and RECIPES.Status = $' + (setClauses.length + 2))
+        values.push(status)
     } else {
         setClauses.push(" and RECIPES.Status != 'Delete'")
     }
@@ -217,9 +229,14 @@ const updateRecipe = async ({ recipeId, name, description, estimatedTime, ingred
     }
 }
 
-const changeRecipeStatus = async ({ recipeId, newStatus }) => {
-    const queryString = 'update RECIPES set status = $1 where RecipeId = $2'
-    const values = [newStatus, recipeId]
+const changeRecipeStatus = async ({ recipeId, newStatus, approvedBy }) => {
+    let queryString = 'update RECIPES set status = $1 '
+    let values = [newStatus, recipeId]
+    if (approvedBy) {
+        queryString += ', approved = $3 '
+        values.push(approvedBy)
+    }
+    queryString += 'where RecipeId = $2'
     try {
         await postgres.query(queryString, values)
 

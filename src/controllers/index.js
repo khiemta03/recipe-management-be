@@ -3,7 +3,7 @@ const {getCommentsController, addCommentController, removeCommentController, upd
 const { loginController, registerController, logoutController } = require('./auth-controller')
 const { recipeCategoriesController, recipeCategoryCountController } = require('./recipe-category-controller')
 const { getRecipesController, recipesCountController, getRecipeController,
-    getPendingRecipesController, getDeletedRecipesController, getRecipesOfUserController } = require('./recipe-controller')
+    getPendingRecipesController, getRecipesOfUserController } = require('./recipe-controller')
 const { getAllUsersController, getUserProfileController, addNewUserController,
     deleteUserController, updateUserProfileController } = require('./user-controller')
 const { getRolesController } = require('../controllers/role-controller')
@@ -19,7 +19,6 @@ module.exports = {
     getRecipesController,
     getRecipeController,
     getPendingRecipesController,
-    getDeletedRecipesController,
     getAllUsersController,
     getUserProfileController,
     addNewUserController,
