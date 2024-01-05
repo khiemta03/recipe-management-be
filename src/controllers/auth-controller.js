@@ -24,6 +24,11 @@ const loginController = async (req, res, next) => {
         } else if (!bcrypt.compareSync(password, userData.password)) {
             throw new Error('Tên đăng nhập hoặc mật khẩu không chính xác')
         }
+        else if(userData.status !== 'Active') {
+            //check status
+            throw new Error('Tài khoản này đang bị khóa');
+            
+        }
         else {
             // Database has this username, so we send a success message with a token
             const token = tokenUtils.generateNewToken({
