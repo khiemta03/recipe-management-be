@@ -61,7 +61,7 @@ const getRecipe = async (recipeId) => {
     }
 }
 
-const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword, year) => {
+const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword, year, userId) => {
 
     let queryString = `select count(*)
                         \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
@@ -82,6 +82,11 @@ const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword, y
     if (year) {
         setClauses.push('\nand EXTRACT(YEAR FROM RECIPES.datesubmit) = $' + (setClauses.length + 2))
         values.push(year)
+    }
+
+    if (userId) {
+        setClauses.push('\nand USERS.UserId = $' + (setClauses.length + 2))
+        values.push(userId)
     }
     queryString += setClauses.join(' ')
 
