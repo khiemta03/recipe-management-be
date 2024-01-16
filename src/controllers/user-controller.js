@@ -4,7 +4,6 @@ const { uploadFileToGCP } = require('../helpers/gcp')
 const { isEmpty } = require('../utils/objectUtils')
 
 const booleanUtils = require('../utils/booleanUtils')
-const fs = require('fs').promises
 const boolean = require('../utils/booleanUtils');
 
 const bcrypt = require('bcrypt');
@@ -42,6 +41,7 @@ const getAllUsersController = async (req, res) => {
             page: page,
             per_page: perPage,
             total_page: userCount % perPage === 0 ? Math.floor(userCount / perPage) : Math.floor(userCount / perPage) + 1,
+            total_users: userCount,
             user_status: status,
             keyword: keyword,
             sort_by: sortBy,
@@ -176,10 +176,10 @@ const updateUserProfileController = async (req, res) => {
         }
         let password = req.body['password'] || null
         //hash password
-        if(password) {
+        if (password) {
             password = bcrypt.hashSync(password, saltRounds);
         }
-        
+
         const name = req.body['name'] || null
         const email = req.body['email'] || null
         await updateUserProfile(userId, password, name, email, avatar)

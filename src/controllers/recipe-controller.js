@@ -1,5 +1,6 @@
-const { getRecipes, getNumOfRecipes, getFavouriteRecipes, getRecipe, getUserProfile, getRoleByRoleId } = require('../queries/index')
+const { getRecipes, getNumOfRecipes, getFavouriteRecipes, getRecipe, getRoleByRoleId } = require('../queries/index')
 const { getRecipesOfUser, getUserRecipeCount, addNewRecipe, updateRecipe, changeRecipeStatus, getRecipeCountStatistics } = require('../queries/recipe-queries')
+const { getRecipeCategories } = require('../queries/recipe-category-queries')
 const { isInFavourites } = require('../queries/favourite-queries')
 const { isEmpty } = require('../utils/objectUtils')
 const { uploadFileToGCP } = require('../helpers/gcp')
@@ -339,14 +340,25 @@ const getRecipeStatisticsOfAdmin = async (req, res) => {
     const status = req.query['status'] || null
 
     try {
-        const recipeCountList = await getRecipeCountStatistics({ year, category, status })
-
+        const recipeCountList = await getRecipeCountStatistics({ year, category, status: status || 'Approved' })
+        const categoryList = await getRecipeCategories()
+        const category_numOfRecipes_map = []
+        for (const c of categoryList) {
+            const numOfRecipesByCategory = await getNumOfRecipes(c.categoryid, status || 'Approved', null, year)
+            category_numOfRecipes_map.push({
+                category: c,
+                num_recipes: numOfRecipesByCategory
+            })
+        }
         return res.json({
             status: 200,
             category: category,
             year: year,
             status: status,
-            data: recipeCountList
+            data: {
+                recipesByMonth: recipeCountList,
+                recipeByCategory: category_numOfRecipes_map
+            }
         })
     }
     catch (err) {

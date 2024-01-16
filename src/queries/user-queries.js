@@ -31,7 +31,7 @@ const addNewUser = async (username, password, name, email, role = 1, avatar = nu
 
 
 const getAllUsers = async ({ page, per_page, role, status, keyword, sort_by }) => {
-    let queryString = 'select * from USERS where 1 = 1'
+    let queryString = 'select * from USERS where role != 3'
     let setClauses = [];
     let values = [(page - 1) * per_page, per_page]
     if (status) {
@@ -48,14 +48,11 @@ const getAllUsers = async ({ page, per_page, role, status, keyword, sort_by }) =
         setClauses.push(' and role = $' + (setClauses.length + 3))
         values.push(role)
     }
-    else {
-        queryString += ' and role != 3'
-    }
 
     queryString += setClauses.join(' ')
 
 
-    queryString += sort_by === 'date' ? '\norder by Created_Date Desc' : ''
+    queryString += sort_by === 'date' ? '\norder by Created_Date Desc' : '\norder by role ASC, name ASC'
     queryString += '\noffset $1\nlimit $2'
 
     try {
@@ -126,15 +123,13 @@ const updateUserProfile = async (userId, password, name, email, avatar) => {
 
 
 const getNumOfUsers = async ({ role, keyword, status }) => {
-    let queryString = 'select count(*) from Users where 1 = 1'
+    let queryString = 'select count(*) from Users where role != 3'
 
     let values = []
     let setClauses = []
     if (role) {
         setClauses.push(' and Role = $' + (setClauses.length + 1))
         values.push(role)
-    } else {
-        queryString += ' and role != 3'
     }
 
     if (keyword) {
@@ -174,8 +169,7 @@ const getUserCountStatistics = async ({ year, role, status }) => {
             CAST(COALESCE(COUNT(u.userId), 0) AS INTEGER) AS num_users
         FROM months_series ms
         LEFT JOIN
-            users u ON EXTRACT(MONTH FROM u.created_date) = ms.month AND EXTRACT(YEAR FROM u.created_date) = $1
-
+            users u ON EXTRACT(MONTH FROM u.created_date) = ms.month AND EXTRACT(YEAR FROM u.created_date) = $1 and u.role != 3 
       `
     let values = [year]
     let setClauses = []
@@ -188,8 +182,6 @@ const getUserCountStatistics = async ({ year, role, status }) => {
     if (role) {
         setClauses.push(' and u.role = $' + (setClauses.length + 2))
         values.push(role)
-    } else {
-        queryString += ' and u.Role != 3'
     }
 
     queryString += setClauses.join(' ')
