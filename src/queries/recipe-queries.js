@@ -33,8 +33,10 @@ const getRecipes = async (page, per_page, sort_by, category, status = 'Approved'
         const formattedData = recipeData.rowCount > 0 ? recipeData.rows : []
         return formattedData
     } catch (err) {
-        console.log(err)
-        throw new Error('Lỗi server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -52,30 +54,36 @@ const getRecipe = async (recipeId) => {
         return formattedData
     }
     catch (err) {
-        throw new Error('Lỗi server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
-const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword) => {
+const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword, year) => {
+
     let queryString = `select count(*)
                         \nfrom RECIPES left join CATEGORIES on RECIPES.Category = CATEGORIES.CategoryId
                         \nleft join USERS on RECIPES.Author = USERS.UserId
                         \nwhere RECIPES.Status != 'Deleted' and USERS.Status = 'Active'`
     let values = [status]
+    let setClauses = []
     if (category !== 'all') {
-        queryString += '\nand CATEGORIES.CategoryId = $2'
+        setClauses.push('\nand CATEGORIES.CategoryId = $' + (setClauses.length + 2))
         values.push(category)
     }
 
     if (keyword) {
-        if (category !== 'all') {
-            queryString += '\nand LOWER(RECIPES.Name) like LOWER($3)'
-        } else {
-            queryString += '\nand LOWER(RECIPES.Name) like LOWER($2)'
-        }
+        setClauses.push('\nand LOWER(RECIPES.Name) like LOWER($' + (setClauses.length + 2) + ')')
         values.push(`%${keyword}%`)
     }
 
+    if (year) {
+        setClauses.push('\nand EXTRACT(YEAR FROM RECIPES.datesubmit) = $' + (setClauses.length + 2))
+        values.push(year)
+    }
+    queryString += setClauses.join(' ')
 
     queryString += "\nand RECIPES.status = $1"
     try {
@@ -83,7 +91,10 @@ const getNumOfRecipes = async (category = 'all', status = 'Approved', keyword) =
         const formattedData = parseInt(recipeData.rows[0].count)
         return formattedData
     } catch (err) {
-        throw new Error('Lỗi server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -124,7 +135,10 @@ const getRecipesOfUser = async (userId, page, per_page, sort_by, category, statu
         const formattedData = recipeData.rowCount > 0 ? recipeData.rows : []
         return formattedData
     } catch (err) {
-        throw new Error('Lỗi server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -261,23 +275,26 @@ const getRecipeCountStatistics = async ({ year, category, status, userId }) => {
             CAST(COALESCE(COUNT(r.recipeid), 0) AS INTEGER) AS num_recipes
         FROM months_series ms
         LEFT JOIN
-            recipes r ON EXTRACT(MONTH FROM r.datesubmit) = ms.month AND EXTRACT(YEAR FROM r.datesubmit) = $1
-
-      `
-    let values = [year]
+            recipes r ON EXTRACT(MONTH FROM r.datesubmit) = ms.month `
+    let values = []
     let setClauses = []
+    if (year) {
+        setClauses.push('and EXTRACT(YEAR FROM r.datesubmit) = $' + (setClauses.length + 1))
+        values.push(year)
+    }
+
     if (category) {
-        setClauses.push('and r.Category = $' + (setClauses.length + 2))
+        setClauses.push('and r.Category = $' + (setClauses.length + 1))
         values.push(category)
     }
 
     if (status) {
-        setClauses.push(' and r.Status = $' + (setClauses.length + 2))
+        setClauses.push(' and r.Status = $' + (setClauses.length + 1))
         values.push(status)
     }
 
     if (userId) {
-        setClauses.push(' and r.author = $' + (setClauses.length + 2))
+        setClauses.push(' and r.author = $' + (setClauses.length + 1))
         values.push(userId)
     }
 
