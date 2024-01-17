@@ -12,7 +12,10 @@ const getUserProfile = async (obj) => {
         return userFormattedData
     }
     catch (err) {
-        throw new Error('Lỗi Server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -52,7 +55,7 @@ const getAllUsers = async ({ page, per_page, role, status, keyword, sort_by }) =
     queryString += setClauses.join(' ')
 
 
-    queryString += sort_by === 'date' ? '\norder by Created_Date Desc' : '\norder by role ASC, name ASC'
+    queryString += sort_by === 'date' ? '\norder by Created_Date Desc' : '\norder by name ASC'
     queryString += '\noffset $1\nlimit $2'
 
     try {

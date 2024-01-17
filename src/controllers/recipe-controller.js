@@ -318,7 +318,11 @@ const changeRecipeStatusController = async (req, res) => {
             recipeUtils.checkPermission(recipeUtils.checkChangingRecipeStatusByUser, currentStatus, newStatus)
         }
         else {
-            recipeUtils.checkPermission(recipeUtils.checkChangingRecipeStatusByAdmin, currentStatus, newStatus)
+            if(userId === recipe.author) {
+                recipeUtils.checkPermission(recipeUtils.checkChangingRecipeStatusByAuthorWhoIsAdmin, currentStatus, newStatus)
+            } else {
+                recipeUtils.checkPermission(recipeUtils.checkChangingRecipeStatusByAdmin, currentStatus, newStatus)
+            }
             if (newStatus === 'Approved') {
                 approvedBy = userId
             }

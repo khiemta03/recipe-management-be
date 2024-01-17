@@ -5,9 +5,10 @@ const storage = new Storage({ keyFilename: 'gcp-key.json' })
 const bucket = storage.bucket('recipe-management')
 const path = require('path')
 
+const { v4: uuidv4 } = require('uuid')
 const uploadFileToGCP = async (req) => {
     const imageBuffer = req.file.buffer;
-    const fileName = req.fileName + path.extname(req.file.originalname);
+    const fileName = uuidv4() + path.extname(req.file.originalname);
     const folderName = req.folderName
     try {
         const destination = folderName + '/' + fileName;

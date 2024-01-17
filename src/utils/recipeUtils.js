@@ -18,8 +18,13 @@ const checkChangingRecipeStatusByAdmin = ({ before, after }) => {
     return (before === 'Pending' && (after === 'Approved' || after === 'Rejected'))
 }
 
+const checkChangingRecipeStatusByAuthorWhoIsAdmin = ({ before, after }) => {
+    return checkChangingRecipeStatusByAdmin({ before, after }) || checkChangingRecipeStatusByUser({ before, after })
+}
+
 module.exports = {
     checkChangingRecipeStatusByAdmin,
     checkChangingRecipeStatusByUser,
+    checkChangingRecipeStatusByAuthorWhoIsAdmin,
     checkPermission
 }
