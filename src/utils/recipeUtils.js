@@ -12,6 +12,8 @@ const checkChangingRecipeStatusByUser = ({ before, after }) => {
     return (before === 'Approved' && (after === 'Hidden' || after === 'Deleted'))
         || (before === 'Hidden' && (after === 'Approved' || after === 'Deleted'))
         || (before === 'Rejected' && after === 'Pending')
+        || (before === 'Rejected' && after === 'Deleted')
+        || (before === 'Pending' && after === 'Deleted')
 }
 
 const checkChangingRecipeStatusByAdmin = ({ before, after }) => {
