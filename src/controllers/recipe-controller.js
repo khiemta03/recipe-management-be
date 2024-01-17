@@ -1,4 +1,4 @@
-const { getRecipes, getNumOfRecipes, getFavouriteRecipes, getRecipe, getRoleByRoleId } = require('../queries/index')
+const { getRecipes, getNumOfRecipes, getFavouriteRecipes, getRecipe, getRoleByRoleId, getUserProfile } = require('../queries/index')
 const { getRecipesOfUser, getUserRecipeCount, addNewRecipe, updateRecipe, changeRecipeStatus, getRecipeCountStatistics } = require('../queries/recipe-queries')
 const { getRecipeCategories } = require('../queries/recipe-category-queries')
 const { isInFavourites } = require('../queries/favourite-queries')
@@ -103,6 +103,12 @@ const getRecipeController = async (req, res) => {
     try {
         id = boolean.uuidValidate(id);
         const recipeData = await getRecipe(id)
+        const authorData = await getUserProfile({ userId: recipeData.author })
+        recipeData.author = {
+            id: authorData.userid,
+            name: authorData.name,
+            avatar: authorData.avatar
+        }
         if (isEmpty(recipeData)) {
             throw {
                 status: 400,
@@ -336,15 +342,20 @@ const changeRecipeStatusController = async (req, res) => {
 const getRecipeStatisticsOfAdmin = async (req, res) => {
     let year = req.query['year'] || new Date().getFullYear()
     year = parseInt(year)
-    const category = req.query['category'] || null
-    const status = req.query['status'] || null
+    let category = req.query['category'] || null
+    category = category ? boolean.uuidValidate(category) : null
+    const status = req.query['status'] || 'Approved'
 
     try {
-        const recipeCountList = await getRecipeCountStatistics({ year, category, status: status || 'Approved' })
-        const categoryList = await getRecipeCategories()
+        const recipeCountList = await getRecipeCountStatistics({ year, category, status })
         const category_numOfRecipes_map = []
+
+        const categoryList = await getRecipeCategories()
         for (const c of categoryList) {
-            const numOfRecipesByCategory = await getNumOfRecipes(c.categoryid, status || 'Approved', null, year)
+            let numOfRecipesByCategory = 0
+            if (!category || (category && c.categoryid === category)) {
+                numOfRecipesByCategory = await getNumOfRecipes(c.categoryid, status, null, year)
+            }
             category_numOfRecipes_map.push({
                 category: c,
                 num_recipes: numOfRecipesByCategory
