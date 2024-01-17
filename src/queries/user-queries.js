@@ -12,7 +12,10 @@ const getUserProfile = async (obj) => {
         return userFormattedData
     }
     catch (err) {
-        throw new Error('Lỗi Server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -30,25 +33,42 @@ const addNewUser = async (username, password, name, email, role = 1, avatar = nu
 }
 
 
-const getAllUsers = async (role = 'all') => {
-    let queryString = 'select * from USERS'
-    if (role === 1) {
-        queryString += '\nwhere role = 1'
+const getAllUsers = async ({ page, per_page, role, status, keyword, sort_by }) => {
+    let queryString = 'select * from USERS where role != 3'
+    let setClauses = [];
+    let values = [(page - 1) * per_page, per_page]
+    if (status) {
+        setClauses.push(' and status = $' + (setClauses.length + 3));
+        values.push(status)
     }
-    else if (role === 2) {
-        queryString += '\nwhere role = 2'
+
+    if (keyword) {
+        setClauses.push(' and LOWER(name) like LOWER($' + (setClauses.length + 3) + ')')
+        values.push(`%${keyword}%`)
     }
-    else {
-        queryString += '\nwhere role = 1 or role = 2'
+
+    if (role) {
+        setClauses.push(' and role = $' + (setClauses.length + 3))
+        values.push(role)
     }
+
+    queryString += setClauses.join(' ')
+
+
+    queryString += sort_by === 'date' ? '\norder by Created_Date Desc' : '\norder by name ASC'
+    queryString += '\noffset $1\nlimit $2'
+
     try {
-        const usersQueryData = await postgres.query(queryString);
+        const usersQueryData = await postgres.query(queryString, values);
         const usersData = usersQueryData.rowCount >= 1 ? usersQueryData.rows : []
         const formattedData = usersData.map(({ username, password, ...rest }) => rest)
         return formattedData
     }
     catch (err) {
-        throw new Error('Lỗi Server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -60,7 +80,10 @@ const deleteUserProfile = async (userId) => {
         await postgres.query(queryString, values)
     }
     catch (err) {
-        throw new Error('Lỗi Server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -94,30 +117,125 @@ const updateUserProfile = async (userId, password, name, email, avatar) => {
         await postgres.query(queryString, values)
     }
     catch (err) {
-        throw new Error('Lỗi Server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
 
-const getNumOfUsers = async (role = 'all') => {
-    let queryString = 'select count(*) from Users'
-    if (role === 1) {
-        queryString += '\nwhere role = 1'
-    }
-    else if (role === 2) {
-        queryString += '\nwhere role = 2'
-    }
-    else {
-        queryString += '\nwhere role = 1 or role = 2'
+const getNumOfUsers = async ({ role, keyword, status }) => {
+    let queryString = 'select count(*) from Users where role != 3'
+
+    let values = []
+    let setClauses = []
+    if (role) {
+        setClauses.push(' and Role = $' + (setClauses.length + 1))
+        values.push(role)
     }
 
+    if (keyword) {
+        setClauses.push(' and LOWER(name) like LOWER($' + (setClauses.length + 1) + ')')
+        values.push(`%${keyword}%`)
+    }
+
+    if (status) {
+        setClauses.push(' and Status = $' + (setClauses.length + 1))
+        values.push(status)
+    }
+
+    queryString += setClauses.join(' ')
+
     try {
-        const data = await postgres.query(queryString)
+        const data = await postgres.query(queryString, values)
         const formattedData = parseInt(data.rows[0].count)
         return formattedData
     }
     catch (err) {
-        throw new Error('Lỗi Server')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
+    }
+}
+
+const getUserCountStatistics = async ({ year, role, status }) => {
+    let queryString = `WITH RECURSIVE months_series AS (
+        SELECT 1 AS month
+        UNION
+        SELECT month + 1
+        FROM months_series
+        WHERE month < 12
+        )
+        SELECT ms.month AS month,
+            CAST(COALESCE(COUNT(u.userId), 0) AS INTEGER) AS num_users
+        FROM months_series ms
+        LEFT JOIN
+            users u ON EXTRACT(MONTH FROM u.created_date) = ms.month AND EXTRACT(YEAR FROM u.created_date) = $1 and u.role != 3 
+      `
+    let values = [year]
+    let setClauses = []
+
+    if (status) {
+        setClauses.push(' and u.Status = $' + (setClauses.length + 2))
+        values.push(status)
+    }
+
+    if (role) {
+        setClauses.push(' and u.role = $' + (setClauses.length + 2))
+        values.push(role)
+    }
+
+    queryString += setClauses.join(' ')
+
+    queryString += `
+    GROUP BY
+        ms.month
+    ORDER BY
+        ms.month;`
+
+    try {
+        const countList = await postgres.query(queryString, values)
+        const formattedData = countList.rowCount > 0 ? countList.rows : []
+        return formattedData
+    } catch (err) {
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
+    }
+}
+
+const updateUserStatus = async ({ userId, newStatus }) => {
+    const queryString = 'update users set status = $1 where userId = $2'
+    const values = [newStatus, userId]
+
+    try {
+        await postgres.query(queryString, values)
+        return true
+    }
+    catch (err) {
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
+    }
+}
+
+const updateUserRole = async ({ userId, newRole }) => {
+    const queryString = 'update users set role = $1 where userId = $2'
+    const values = [newRole, userId]
+
+    try {
+        await postgres.query(queryString, values)
+        return true
+    }
+    catch (err) {
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
@@ -128,4 +246,7 @@ module.exports = {
     deleteUserProfile,
     updateUserProfile,
     getNumOfUsers,
+    getUserCountStatistics,
+    updateUserStatus,
+    updateUserRole
 }

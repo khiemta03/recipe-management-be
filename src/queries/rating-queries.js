@@ -15,7 +15,30 @@ const getNumberRatingOfRecipe = async (RecipeId) => {
     const values = [RecipeId];
     try {
         const result = await postgres.query(queryString, values);
-        return result;
+        if (result.rowCount > 0) {
+            return Number(result.rows[0].count);
+        }
+        else {
+            return 0;
+        }
+
+    } catch (err) {
+        throw new Error('Lỗi server');
+    }
+}
+
+const getAvgRatingOfRecipe = async (RecipeId) => {
+    const queryString = 'select avg(rating) from Rating where RecipeId = $1';
+    const values = [RecipeId];
+    try {
+        const result = await postgres.query(queryString, values);
+        if (result.rowCount > 0) {
+            return Number(result.rows[0].avg);
+        }
+        else {
+            return 0;
+        }
+
     } catch (err) {
         throw new Error('Lỗi server');
     }
@@ -41,8 +64,25 @@ const getUserRatingofRecipe = async (RecipedId) => {
     const values = [RecipedId];
     try {
         const result = await postgres.query(queryString, values);
-        return result;
+        const formattedData = result.rowCount > 0 ? result.rows : [];
+        return formattedData
     } catch (err) {
+        throw new Error('Lỗi server');
+    }
+}
+
+const getRatingofUser = async (UserId, RecipeId) => {
+    const queryString = 'SELECT Rating FROM Rating WHERE UserId = $1 and RecipeId = $2';
+    const values = [UserId, RecipeId];
+    try {
+        const result = await postgres.query(queryString, values);
+        if (result.rowCount > 0) {
+            return result.rows[0].rating;
+        }
+        else {
+            return 0;
+        }
+    } catch (error) {
         throw new Error('Lỗi server');
     }
 }
@@ -51,4 +91,4 @@ const getUserRatingofRecipe = async (RecipedId) => {
 
 
 
-module.exports = { Rating, getNumberRatingOfRecipe, updateRating, getUserRatingofRecipe }
+module.exports = { Rating, getNumberRatingOfRecipe, updateRating, getUserRatingofRecipe, getRatingofUser, getAvgRatingOfRecipe }

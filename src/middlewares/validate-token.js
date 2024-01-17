@@ -15,6 +15,9 @@ const validateToken = async (req, res, next) => {
             if (isEmpty(userData)) {
                 throw new Error('Token không hợp lệ')
             }
+            if (userData.status !== 'Active') {
+                throw new Error('Tài khoản này đã bị block')
+            }
             req.user = {
                 userId: userData.userid,
                 username: userData.username,
@@ -32,7 +35,7 @@ const validateToken = async (req, res, next) => {
     else {
         return res.status(403).json({
             status: 403,
-            message: "Bạn không có quyền truy cập vào tài nguyên này"
+            message: "Vui lòng đăng nhập để truy cập vào tài nguyên này"
         })
     }
 }
