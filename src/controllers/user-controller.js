@@ -178,7 +178,6 @@ const updateUserProfileController = async (req, res) => {
         let name = req.body['name'] || null
         let email = req.body['email'] || null
         name = boolean.fullnameValidate(name)
-        console.log(name)
         email = boolean.emailValidate(email)
         await updateUserProfile(userId, null, name, email, avatar)
         res.json({
