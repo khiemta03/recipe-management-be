@@ -18,7 +18,10 @@ const getRecipeCategories = async () => {
         const formattedData = recipeCategoryData.rows
         return formattedData
     } catch (err) {
-        throw new Error('Internal Server Error')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
     }
 }
 
