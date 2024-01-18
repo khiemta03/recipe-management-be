@@ -174,23 +174,21 @@ const updateUserProfileController = async (req, res) => {
             req.folderName = 'UserAvatar'
             avatar = await uploadFileToGCP(req)
         }
-        let password = req.body['password'] || null
-        //hash password
-        if (password) {
-            password = bcrypt.hashSync(password, saltRounds);
-        }
 
-        const name = req.body['name'] || null
-        const email = req.body['email'] || null
-        await updateUserProfile(userId, password, name, email, avatar)
+        let name = req.body['name'] || null
+        let email = req.body['email'] || null
+        name = boolean.fullnameValidate(name)
+        console.log(name)
+        email = boolean.emailValidate(email)
+        await updateUserProfile(userId, null, name, email, avatar)
         res.json({
             status: 200,
             message: 'Cập nhật profile thành công'
         })
     }
     catch (err) {
-        res.status(500).json({
-            status: 500,
+        res.status(400).json({
+            status: 400,
             message: err.message
         })
     }
