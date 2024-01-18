@@ -388,27 +388,23 @@ const getRecipeStatisticsOfAdmin = async (req, res) => {
 
 
 const getRecipeStatisticsOfUser = async (req, res) => {
-    let year = req.query['year'] || new Date().getFullYear()
-    year = parseInt(year)
     const userId = req.user.userId
 
     try {
-        const recipeCountList = await getRecipeCountStatistics({ year, status: 'Approved', userId })
         const categoryList = await getRecipeCategories()
         const category_numOfRecipes_map = []
         for (const c of categoryList) {
-            const numOfRecipesByCategory = await getNumOfRecipes(c.categoryid, 'Approved', null, year, userId)
+            const numOfApprovedRecipes = await getNumOfRecipes(c.categoryid, 'Approved', null, null, userId)
+            const numOfHiddenRecipes = await getNumOfRecipes(c.categoryid, 'Hidden', null, null, userId)
             category_numOfRecipes_map.push({
                 category: c,
-                num_recipes: numOfRecipesByCategory
+                num_recipes: numOfApprovedRecipes + numOfHiddenRecipes
             })
         }
 
         return res.json({
             status: 200,
-            year: year,
-            recipeCountByMonth: recipeCountList,
-            recipeCountByCategory: category_numOfRecipes_map
+            data: category_numOfRecipes_map
         })
     }
     catch (err) {
