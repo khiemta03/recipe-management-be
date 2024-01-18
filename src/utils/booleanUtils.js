@@ -90,7 +90,7 @@ const isUserStatusValid = (status) => {
 }
 
 const fullnameValidate = (fullname) => {
-    const FULLNAME_REGEX = /\b[A-Z][a-z]*\b/;
+    const FULLNAME_REGEX = /^[A-ZÀÁÂÃẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼẾỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴÝỶỸĐ][a-zàáâãạảấầẩẫậắằẳẵặếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹđ]+$/;
     const names = fullname.trim().split(/\s+/); // Tách chuỗi thành mảng các từ, loại bỏ khoảng trắng thừa
     for (let i = 0; i < names.length; i++) {
         if (!FULLNAME_REGEX.test(names[i])) {
