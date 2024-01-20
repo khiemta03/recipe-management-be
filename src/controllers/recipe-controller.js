@@ -127,7 +127,7 @@ const getRecipeController = async (req, res) => {
             recipeData.isfavourite = false
         } else {
             const roleName = await getRoleByRoleId(userData.role)
-            if (roleName === 'User' && userData.userid !== recipeData.author && recipeData.status !== 'Approved') {
+            if (roleName === 'User' && userData.userid !== recipeData.author.id && recipeData.status !== 'Approved') {
                 throw {
                     status: 403,
                     message: 'Bạn không có quyền truy cập vào tài nguyên này'
