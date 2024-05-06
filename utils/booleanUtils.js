@@ -1,6 +1,0 @@
-
-
-
-const isUsernameAndPasswordValid = (username, password) => {
-    
-}

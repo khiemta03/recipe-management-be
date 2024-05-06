@@ -1,0 +1,94 @@
+const postgres = require('../databases/postgreSQL')
+
+const Rating = async (UserId, RecipeId, Rating) => {
+    const queryString = 'insert into Rating values ($1, $2, $3)';
+    const values = [UserId, RecipeId, Rating];
+    try {
+        await postgres.query(queryString, values);
+    } catch (err) {
+        throw new Error('Lỗi server');
+    }
+}
+
+const getNumberRatingOfRecipe = async (RecipeId) => {
+    const queryString = 'select count(rating) from Rating where RecipeId = $1';
+    const values = [RecipeId];
+    try {
+        const result = await postgres.query(queryString, values);
+        if (result.rowCount > 0) {
+            return Number(result.rows[0].count);
+        }
+        else {
+            return 0;
+        }
+
+    } catch (err) {
+        throw new Error('Lỗi server');
+    }
+}
+
+const getAvgRatingOfRecipe = async (RecipeId) => {
+    const queryString = 'select avg(rating) from Rating where RecipeId = $1';
+    const values = [RecipeId];
+    try {
+        const result = await postgres.query(queryString, values);
+        if (result.rowCount > 0) {
+            return Number(result.rows[0].avg);
+        }
+        else {
+            return 0;
+        }
+
+    } catch (err) {
+        throw new Error('Lỗi server');
+    }
+}
+
+const updateRating = async (UserId, RecipeId, Rating) => {
+    const queryString = `update Rating
+                        \nset Rating = $1
+                        \nwhere UserId = $2 and RecipeId = $3`;
+    const values = [Rating, UserId, RecipeId];
+    try {
+        await postgres.query(queryString, values);
+    } catch (err) {
+        throw new Error('Lỗi server');
+    }
+
+}
+
+const getUserRatingofRecipe = async (RecipedId) => {
+    const queryString = `SELECT Users.avatar, Users.name, Rating
+                        \nFROM Rating join Users on Rating.UserId = Users.UserId
+                        \nWHERE Rating.RecipeId = $1`;
+    const values = [RecipedId];
+    try {
+        const result = await postgres.query(queryString, values);
+        const formattedData = result.rowCount > 0 ? result.rows : [];
+        return formattedData
+    } catch (err) {
+        throw new Error('Lỗi server');
+    }
+}
+
+const getRatingofUser = async (UserId, RecipeId) => {
+    const queryString = 'SELECT Rating FROM Rating WHERE UserId = $1 and RecipeId = $2';
+    const values = [UserId, RecipeId];
+    try {
+        const result = await postgres.query(queryString, values);
+        if (result.rowCount > 0) {
+            return result.rows[0].rating;
+        }
+        else {
+            return 0;
+        }
+    } catch (error) {
+        throw new Error('Lỗi server');
+    }
+}
+
+
+
+
+
+module.exports = { Rating, getNumberRatingOfRecipe, updateRating, getUserRatingofRecipe, getRatingofUser, getAvgRatingOfRecipe }

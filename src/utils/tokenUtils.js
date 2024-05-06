@@ -8,17 +8,24 @@ const secretKey = process.env.SECRET_KEY
 
 
 const isTokenValid = (token) => {
-
+    try {
+        const obj = jwt.verify(token, secretKey);
+        return true;
+    }
+    catch(err) {
+        return false;
+    }
 }
 
 const generateNewToken = (obj) => {
     try {
-        const newToken = jwt.sign(obj, secretKey)
+        //create token has 2 hours expires
+        const newToken = jwt.sign(obj, secretKey, {expiresIn: 7200})
         
         return newToken
     }
     catch (err) {
-        throw (err)
+        throw new Error('Invalid Credentials')
     }
 }
 
@@ -28,7 +35,7 @@ const getObjectFromToken = (token) => {
         return obj
     }
     catch (err) {
-        throw(err)
+        throw new Error('Invalid Credentials')
     }
 }
 
